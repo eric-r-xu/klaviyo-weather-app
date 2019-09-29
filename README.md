@@ -34,15 +34,15 @@
 
 >(a) upgrading the number of virtual CPUs (units of processing power) and RAM memory
 
->(c) switching from shared CPU to dedicated CPUs and consider to increase CPU and memory capacity and minimize hyperthread data loss
+>(c) switching from shared CPU to dedicated CPUs to minimize hyperthread data loss
 
->(c) hosting the web application on a WGSI server or a more production-ready Django web application framework (Flask is a development server that doesn't efficiently handle many concurrent requests/threads)
+>(c) hosting the web application on a WGSI server or a more production-ready Django web application framework to more efficiently handle concurrent requests/threads
 
->(d) separating the web application subscription server from the server(s) for the weather api and the weather email services
+>(d) separating the subscription app server from the weather api and the weather email servers
 
->(e) purging subscriptions a period of time after the sign up date such that users would have to sign up again to continue receiving emails for a particular city
+>(e) purging older subscriptions on a regular cadence to save on storage and compute (currently subscriptions older than 10 days are purged)
 
->(f) consider distributing the compute/storage for city subscriptions with a high skew so the server load is more balanced
+>(f) using a distributed relational database architecture like hive on a hadoop distributed file system to more gracefully handle larger amounts of data
 
 
 
@@ -58,23 +58,23 @@
 
 >The weather powered email is comprised of 3 main components: 
 
->1st component: the subscription app service (renders the html and validates/limits requests)  
+>1st component: SUBSCRIPTION APPLICATION SERVICE -- renders the subscription form html, validates/limits requests, and maintains MySQL subscription table tblDimEmailCity
 
->2nd component: the weather api service (loads MySql table tblFactCityWeather)
+>2nd component: WEATHER API SERVICE -- calls weather api (https://www.weatherbit.io/api) and maintains MySQL table tblFactCityWeather
 
->3rd component: the weather email service (sends email based on stats in MySql table tblFactCityWeather)
+>3rd component: WEATHER EMAIL SERVICE -- purges old subscriptions in MySQL table tblDimEmailCity and sends weather powered emails based on MySQL tables tblDimEmailCity and tblFactCityWeather
 
-If the utilized Ubuntu 18.04 LTS server was upgraded to have >=4 gb ram, a task scheduler service like airflow (https://airflow.apache.org/) could be useful to track and log the 2nd and 3rd app components (weather api and email service, respectively) as their own operator tasks within a DAG.  The airflow webserver can then be started to log, track, and visualize task failures as well as task durations in an intuitive manner.  To increase the power and robustness of the airflow task orchestration system, would consider changing from the local executor to the celery executor to isolate task processes from those populating the airflow scheduler and webserver.
+If the utilized Ubuntu 18.04 LTS server was upgraded to have >=4 gb RAM, a task scheduler service like airflow (https://airflow.apache.org/) could be useful to track and log the WEATHER API and WEATHER EMAIL services as their own operator tasks within a DAG.  The airflow webserver can then be started to log, track, and visualize task failures as well as task durations in an intuitive manner.  If more cpu/memory is meet timing requirements, consider running airflow with a distributed architecture using Celery (see https://medium.com/@manuelmourato25/when-airflow-isnt-fast-enough-distributed-orchestration-of-multiple-small-workloads-with-celery-afb3daebe611).
 
 ## Re-Inventing the Wheel? 
 ###### We're big believers in not building what's already been built. Of course there are trade offs, so how did you decide whether to build functionality yourself or use existing solutions to make your job easier?
 >ANSWER: 
 
->I believe using mature open-source package solutions with a large number of contributors should be utilized as much as possible since it has the benefit of being thoroughly tested by a smart community and furthers open-source package development.  However, building functionality yourself can be beneficial if:
+>I believe using mature open-source package solutions should be utilized as much as possible since it has the benefit of being thoroughly tested and furthers open-source package development.  However, building functionality yourself can be beneficial if:
 
 >(a) more flexibility is needed than an open-source project currently allows 
 
->(b) hard drive or memory constraints with an open-source project that may be overkill/costly for the initial prototype
+>(b) you want to test and scale out your prototype manually before committing to any existing solutions that may be costly or overkill
 
 >(c) time is critical & the language(s) and/or abstraction layer(s) are unfamiliar or complex
 
@@ -86,6 +86,7 @@ The current weather app is built using Flask, a popular open-source microframewo
 
 >ANSWER:
 
->I believe the app could be easier & more intuitive to use by allowing users to specify what frequency (default is daily) and what local time they prefer to receive the weather powered email.  Currently, the emails are sent according to a daily cron schedule not based on local time.  The app should also have added functionality to allow email-city combinations to be unsubscribed from the weather powered email service.
+>I believe the app could be easier & more intuitive to use by allowing users to specify what frequency and what local time they prefer to receive the weather powered email (currently, the emails are sent once daily starting at 9 am EDT).  Adding the functionality to subscribe more than one email at a time could also help with ease of use.
 
->I believe the weather powered email could be more fun/engaging to the subscribed users by displaying interesting tidbits of weather data historically for the subscriber's city as well as some stats of the other 99 US cities.  For example, 5% of the other 99 populous US cities also experienced precipitation today.
+
+>I believe the weather powered email could be more fun/engaging to the subscribed users by displaying interesting factoids of weather data historically for each subscriber's city as well data on the other 99 US populous US cities.  
