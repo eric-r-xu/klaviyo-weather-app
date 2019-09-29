@@ -1,7 +1,8 @@
 # [klaviyo-weather-app](https://www.klaviyo.com/weather-app)
 ## [Top 100 US Cities by Population from 2018 Estimate](https://en.wikipedia.org/wiki/List_of_United_States_cities_by_population)
 ### web application deployment directions
-#### Deployed using a shared CPU Ubuntu 18.04 LTS Digital Ocean droplet, git version 2.17.1, Python 3.6.8, & MySQL 5.7.27 and subscription app service hosted here: http://104.236.40.7:1984/klaviyo_weather_app
+#### Deployed using a shared CPU Ubuntu 18.04 LTS Digital Ocean droplet, git version 2.17.1, Python 3.6.8, & MySQL 5.7.27 
+#### subscription app service hosted here: http://104.236.40.7:1984/klaviyo_weather_app
 1. *ssh into your Ubuntu 18.04 LTS server*
 2. *install MySQL (e.g. https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04)*
 3. > sudo apt-get update
