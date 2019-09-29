@@ -27,7 +27,7 @@
 -----------------------------------------------------------------------------------------------------------------------------
 
 ## Scalability 
-###### What happens if your app launches and goes viral? What bottlenecks would there be and how can you optimize the system or break through them?
+##### What happens if your app launches and goes viral? What bottlenecks would there be and how can you optimize the system or break through them?
 
 >Currently this web application is deployed using a shared CPU Ubuntu 18.04 LTS Digital Ocean droplet.  To control for high volume, the subscription page limits 50 requests per hour and 200 requests per day for each remote address.  If the app reaches resource limits due to to high traffic, optimizations include (but are not limited to):
 
@@ -46,12 +46,12 @@
 
 
 ## Security 
-###### How does your app handle invalid or even malicious input from users?
+##### How does your app handle invalid or even malicious input from users?
 
 >The subscription page checks for the validity of the email and limits the number of requests per remote address (50/hour and 200/day).  For edge cases not considered, please check the log file in /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d)
 
 ## Re-Usability 
-###### What components of your app would make sense to be their own modules or services so they can be re-used by other sections of code later?
+##### What components of your app would make sense to be their own modules or services so they can be re-used by other sections of code later?
 
 >The weather powered email is comprised of 3 main components: 
 
@@ -61,10 +61,10 @@
 
 >3rd component: WEATHER EMAIL SERVICE -- purges old subscriptions in MySQL table tblDimEmailCity and sends weather powered emails based on MySQL tables tblDimEmailCity and tblFactCityWeather
 
-If the utilized Ubuntu 18.04 LTS server was upgraded to have >=4 gb RAM, a task scheduler service like airflow (https://airflow.apache.org/) could be useful to track and log the WEATHER API and WEATHER EMAIL services as their own operator tasks within a DAG.  The airflow webserver can then be started to log, track, and visualize task failures as well as task durations in an intuitive manner.  If more cpu/memory is meet timing requirements, consider running airflow with a distributed architecture using Celery (see https://medium.com/@manuelmourato25/when-airflow-isnt-fast-enough-distributed-orchestration-of-multiple-small-workloads-with-celery-afb3daebe611).
+>If the utilized Ubuntu 18.04 LTS server was upgraded to have >=4 gb RAM, a task scheduler service like airflow (https://airflow.apache.org/) could be useful to track and log the WEATHER API and WEATHER EMAIL services as their own operator tasks within a DAG.  The airflow webserver can then be started to log, track, and visualize task failures as well as task durations in an intuitive manner.  If more cpu/memory is meet timing requirements, consider running airflow with a distributed architecture using Celery (see https://medium.com/@manuelmourato25/when-airflow-isnt-fast-enough-distributed-orchestration-of-multiple-small-workloads-with-celery-afb3daebe611).
 
 ## Re-Inventing the Wheel? 
-###### We're big believers in not building what's already been built. Of course there are trade offs, so how did you decide whether to build functionality yourself or use existing solutions to make your job easier?
+##### We're big believers in not building what's already been built. Of course there are trade offs, so how did you decide whether to build functionality yourself or use existing solutions to make your job easier?
 
 >I believe using mature open-source package solutions should be utilized as much as possible since it has the benefit of being thoroughly tested and furthers open-source package development.  However, building functionality yourself can be beneficial if:
 
@@ -74,11 +74,11 @@ If the utilized Ubuntu 18.04 LTS server was upgraded to have >=4 gb RAM, a task 
 
 >(c) time is critical & the language(s) and/or abstraction layer(s) are unfamiliar or complex
 
-The current weather app is built using Flask, a popular open-source microframework for creating flexible and lightweight web applications.  Instead of reinventing the wheel (or my own logic), I opted to use a popular python3 package for validating email addresses (https://pypi.org/project/py3-validate-email/) with added functionality such as domain validation and blacklist exclusion.
+>The current weather app is built using Flask, a popular open-source microframework for creating flexible and lightweight web applications.  Instead of reinventing the wheel (or my own logic), I opted to use a popular python3 package for validating email addresses (https://pypi.org/project/py3-validate-email/) with added functionality such as domain validation and blacklist exclusion.
 
 
 ## Usability 
-###### It's important that Klaviyo be easy to use — both for our users and the people they're emailing. How could your app be easier (or maybe more fun) to use?
+##### It's important that Klaviyo be easy to use — both for our users and the people they're emailing. How could your app be easier (or maybe more fun) to use?
 
 >I believe the app could be easier & more intuitive to use by allowing users to specify what frequency and what local time they prefer to receive the weather powered email (currently, the emails are sent once daily starting at 9 am EDT).  Adding the functionality to subscribe more than one email at a time could also help with ease of use.
 
