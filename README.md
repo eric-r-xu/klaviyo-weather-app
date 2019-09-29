@@ -21,7 +21,7 @@
 17. *start the flask app subscription service send log messages to '/tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d)' using step 18*
 18. > nohup python3 ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &
 19. *cron the daily weather api & email service and send log messages to '/tmp/klaviyo-weather-app.weather_api_email_service.log.$(date +\%Y\%m\%d)' by inserting cron entry in step 20 into your {{user}} account's crontab*
-20.  > ###### 0 9 * * * /home/{{user}}/klaviyo-weather-app/env/bin/python3 /home/{{user}}/klaviyo-weather-app/weather_api_email_service.py > /tmp/klaviyo-weather-app.weather_api_email_service.log.$(date +\%Y\%m\%d) 2>&1
+20.  > ###### 0 9 * * * /home/{{user}}/klaviyo-weather-app/env/bin/python3 /home/{{user}}/klaviyo-weather-app/weather_api_and_email_service.py > /tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d) 2>&1
 
 -----------------------------------------------------------------------------------------------------------------------------
 
