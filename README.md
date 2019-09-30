@@ -83,4 +83,4 @@
 >I believe the app could be easier & more intuitive to use by allowing users to specify what frequency and what local time they prefer to receive the weather powered email (currently, the emails are sent once daily starting at 9 am EDT).  Adding the functionality to subscribe more than one email at a time could also help with ease of use.
 
 
->I believe the weather powered email could be more fun/engaging to the subscribed users by displaying interesting factoids of weather data historically for each subscriber's city as well data on the other 99 US populous US cities.  
+>I believe the weather powered email could be more fun/engaging to the subscribed users by displaying interesting factoids of weather data historically for each subscriber's city as well data on the other 99 US cities.  
