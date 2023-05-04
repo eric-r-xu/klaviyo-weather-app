@@ -15,7 +15,7 @@
 10. > sudo apt-get install python3-setuptools
 11. *install python3 virtual environment and packages using instructions below*
 12. > cd klaviyo-weather-app;sudo apt-get install python3-venv
-13. > sudo apt install build-essential libssl-dev libffi-dev python-dev
+13. > sudo apt install build-essential libssl-dev libffi-dev python-dev-is-python3
 14. > python3 -m venv env 
 15. > source ./env/bin/activate
 16. > python -m pip install --upgrade pip
