@@ -12,21 +12,20 @@
 7. > git clone https://github.com/eric-r-xu/klaviyo-weather-app.git
 8. *follow instructions in **local_settings_template.py** to set up api and mysql credentials and initialize city variables*
 9. > sudo apt install -y python3-pip
-9b. > sudo apt-get install python3-setuptools
-10. > cd klaviyo-weather-app
+10. > sudo apt-get install python3-setuptools
 11. *install python3 virtual environment and packages using instructions below*
-12. > sudo apt-get install python3-venv
+12. > cd klaviyo-weather-app;sudo apt-get install python3-venv
 13. > sudo apt install build-essential libssl-dev libffi-dev python-dev
 14. > python3 -m venv env 
 15. > source ./env/bin/activate
-15b. > python -m pip install --upgrade pip
-15c. > apt-get install libsasl2-dev libsasl2-2 libsasl2-modules-gssapi-mit
-15d. > sudo apt-get install libmysqlclient-dev
-16. > pip install -r ~/klaviyo-weather-app/py3requirements.txt
-17. *start the flask app subscription service send log messages to '/tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d)' using step 18*
-18. > nohup python3 ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &
-19. *cron the daily weather api & email service and log messages to '/tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d)' by adding step 20 into your crontab*
-20.  > ###### 0 9 * * * /home/$(whoami)/klaviyo-weather-app/env/bin/python3 /home/$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py > /tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d) 2>&1
+16. > python -m pip install --upgrade pip
+17. > sudo apt-get install libsasl2-dev libsasl2-2 libsasl2-modules-gssapi-mit
+18. > sudo apt-get install libmysqlclient-dev
+19. > pip install -r ~/klaviyo-weather-app/py3requirements.txt
+20. *start the flask app subscription service send log messages to '/tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d)' using step 18*
+21. > nohup python3 ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &
+22. *cron the daily weather api & email service and log messages to '/tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d)' by adding step 20 into your crontab*
+23.  > ###### 0 9 * * * /home/$(whoami)/klaviyo-weather-app/env/bin/python3 /home/$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py > /tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d) 2>&1
 
 -----------------------------------------------------------------------------------------------------------------------------
 
