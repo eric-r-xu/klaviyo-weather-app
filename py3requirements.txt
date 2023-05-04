@@ -3,6 +3,7 @@ flask-mysqldb
 DateTime
 Flask-Limiter
 Flask-Mail
+setuptools
 Jinja2
 SQLAlchemy
 pymysql
