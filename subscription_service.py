@@ -34,11 +34,8 @@ app.config['MYSQL_DB'] = 'klaviyo'
 
 mysql = MySQL(app)
 
-update_builtin_blacklist(
-    force: bool = False,
-    background: bool = True,
-    callback: Callable = None
-) -> Optional[Thread]
+# update email blacklist
+update_builtin_blacklist(force=True, background=True)
 
 @app.route('/klaviyo_weather_app')
 def klaviyo_weather_app_html():
