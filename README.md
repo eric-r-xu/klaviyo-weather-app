@@ -19,8 +19,10 @@
 13. > sudo apt install build-essential libssl-dev libffi-dev python-dev
 14. > python3 -m venv env 
 15. > source ./env/bin/activate
-16. > pip3 install -r ~/klaviyo-weather-app/py3requirements.txt
-16b. > sudo apt-get install libmysqlclient-dev
+15b. > python -m pip install --upgrade pip
+15c. > apt-get install libsasl2-dev libsasl2-2 libsasl2-modules-gssapi-mit
+15d. > sudo apt-get install libmysqlclient-dev
+16. > pip install -r ~/klaviyo-weather-app/py3requirements.txt
 17. *start the flask app subscription service send log messages to '/tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d)' using step 18*
 18. > nohup python3 ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &
 19. *cron the daily weather api & email service and log messages to '/tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d)' by adding step 20 into your crontab*
