@@ -1,4 +1,3 @@
-# Eric Xu, 2019-09
 import pymysql
 import warnings
 from local_settings import *
