@@ -9,7 +9,7 @@
 4. > sudo apt-get upgrade
 5. > sudo apt-get install git
 6. > cd ~/
-7. > git clone https://github.com/eric-xu-ownerIQ/klaviyo-weather-app.git
+7. > git clone https://github.com/eric-r-xu/klaviyo-weather-app.git
 8. *follow instructions in **local_settings_template.py** to set up api and mysql credentials and initialize city variables*
 9. > sudo apt install -y python3-pip
 10. > cd klaviyo-weather-app
