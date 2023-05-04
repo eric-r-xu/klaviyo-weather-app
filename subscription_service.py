@@ -15,6 +15,7 @@ import initialize_mysql
 from flask_mysqldb import MySQL
 from local_settings import *
 from validate_email import validate_email
+from validate_email.updater import update_builtin_blacklist
 ##########################
 
 # ensure info logs are printed
@@ -33,6 +34,12 @@ app.config['MYSQL_DB'] = 'klaviyo'
 
 mysql = MySQL(app)
 
+update_builtin_blacklist(
+    force: bool = False,
+    background: bool = True,
+    callback: Callable = None
+) -> Optional[Thread]
+
 @app.route('/klaviyo_weather_app')
 def klaviyo_weather_app_html():
   return render_template("subscribe.html")
@@ -41,8 +48,7 @@ def klaviyo_weather_app_html():
 @app.route('/klaviyo_weather_app', methods=['POST'])
 def klaviyo_weather_app_post():
   i_email = str(request.form['i_email'])
-  is_valid = validate_email(email_address=i_email, check_mx=True, smtp_timeout=10, \
-                            dns_timeout=10, use_blacklist=True)
+  is_valid = validate_email(email_address=i_email, check_format=True, check_blacklist=True)
 
   if is_valid == False:
     return str('Unable to validate email address: %s' % i_email)
