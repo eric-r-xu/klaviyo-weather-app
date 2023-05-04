@@ -12,16 +12,20 @@
 7. > git clone https://github.com/eric-r-xu/klaviyo-weather-app.git
 8. *follow instructions in **local_settings_template.py** to set up api and mysql credentials and initialize city variables*
 9. > sudo apt install -y python3-pip
-9b. > sudo apt-get install python3-setuptools
+10. > sudo apt-get install python3-setuptools
 10. > cd klaviyo-weather-app
 11. *install python3 virtual environment and packages using instructions below*
 12. > sudo apt-get install python3-venv
 13. > sudo apt install build-essential libssl-dev libffi-dev python-dev
 14. > python3 -m venv env 
 15. > source ./env/bin/activate
+
 15b. > python -m pip install --upgrade pip
+
 15c. > apt-get install libsasl2-dev libsasl2-2 libsasl2-modules-gssapi-mit
+
 15d. > sudo apt-get install libmysqlclient-dev
+
 16. > pip install -r ~/klaviyo-weather-app/py3requirements.txt
 17. *start the flask app subscription service send log messages to '/tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d)' using step 18*
 18. > nohup python3 ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &
