@@ -1,7 +1,7 @@
 # INSTRUCTIONS:
 # Fill in 'xxx' credentials accordingly and rename file to local_settings.py
 
-# weather api
+# weather api (https://home.openweathermap.org/api_keys)
 OPENWEATHERMAP_AUTH = {
     'api_key': 'xxx',
 }
@@ -10,7 +10,7 @@ OPENWEATHERMAP_AUTH = {
 MYSQL_AUTH = {
     'user': 'xxx',
     'password': 'xxx',
-    'host': 'xxx',
+    'host': 'localhost',
 }
 
 
