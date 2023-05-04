@@ -1,10 +1,10 @@
 # [klaviyo-weather-app](https://www.klaviyo.com/weather-app)
 ## [Top 100 US Cities by Population from 2018 Estimate](https://en.wikipedia.org/wiki/List_of_United_States_cities_by_population)
 ### web application deployment directions
-#### Deployed Ubuntu 18.04 (LTS) x64 Digital Ocean droplet, git version 2.17.1, Python 3.6.9, & MySQL 5.7.41 
+#### Deployed Ubuntu 20.04 (LTS) x64 Digital Ocean droplet, git version 2.17.1, Python 3.6.9, & MySQL 5.7.41 
 #### subscription app service hosted here: http://143.244.209.231:1984/klaviyo_weather_app
-1. *ssh into your Ubuntu 18.04 LTS server*
-2. *install MySQL (e.g. https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-18-04)*
+1. *ssh into your Ubuntu server*
+2. *install MySQL (e.g. https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04)*
 3. > sudo apt-get update
 4. > sudo apt-get upgrade
 5. > sudo apt-get install git
