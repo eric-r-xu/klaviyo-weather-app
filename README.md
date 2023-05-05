@@ -1,5 +1,5 @@
 # [klaviyo-weather-app](https://www.klaviyo.com/weather-app)
-## [Top 100 US Cities by Population from 2018 Estimate](https://en.wikipedia.org/wiki/List_of_United_States_cities_by_population)
+## [Top 100 US Cities by Population](https://en.wikipedia.org/wiki/List_of_United_States_cities_by_population)
 ### web application deployment directions
 #### Deployed Ubuntu 20.04 (LTS) x64 Digital Ocean droplet, git version 2.17.1, Python 3.10.6, & MySQL 5.7.41 
 #### subscription app service hosted [here](http://ericrxu.com:1984/klaviyo_weather_app)
