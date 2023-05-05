@@ -14,8 +14,8 @@ createTblFactLatLongRain = """CREATE TABLE IF NOT EXISTS rain.TblFactLatLongRain
     `localDateTimeChecked` VARCHAR(255) NOT NULL,
     `timestampUpdated` INT(11) NOT NULL,
     `localDateTimeUpdated` VARCHAR(255) NOT NULL,
-    `latitude` DECIMAL(5,4) NOT NULL DEFAULT '0.0000',
-    `longitude` DECIMAL(5,4) NOT NULL DEFAULT '0.0000',
+    `latitude` DECIMAL(7,4) SIGNED NOT NULL DEFAULT '000.0000',
+    `longitude` DECIMAL(7,4) SIGNED NOT NULL DEFAULT '000.0000',
     `rain_mm_l1h` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
     PRIMARY KEY (`timestampChecked`,`timestampUpdated`,`latitude`,`longitude`)) 
     ENGINE=InnoDB DEFAULT CHARSET=latin1;"""
