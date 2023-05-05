@@ -105,5 +105,5 @@ latitude, longitude, rain_mm_l1h) VALUES (%i, '%s', %i, '%s', %.4f, %.4f, %.1f)"
     return logging.info("finished calling weather api and updating mysql")
 
 
-# weather api service
-weather_api_service(mysql_conn)
+# rain api service
+rain_api_service(mysql_conn)
