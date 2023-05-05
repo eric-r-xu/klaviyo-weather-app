@@ -34,8 +34,6 @@ app.config['MYSQL_DB'] = 'rain'
 
 mysql = MySQL(app)
 
-
-
 # connect to sql
 def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
@@ -48,18 +46,14 @@ def runQuery(mysql_conn, query):
             warnings.simplefilter("ignore")
             cursor.execute(query)
 
-@app.route('/')
-def rain():
-  return render_template("rain.html")            
+mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])        
+df = pd.read_sql_query('SELECT * FROM rain.TblFactLatLongRain ORDER BY timestampChecked DESC', mysql_conn)
+            
 
-@app.route('/rain_query')
-def rain_query():
-  mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
-  try:
-    query_result = runQuery(mysql_conn, "SELECT * FROM rain.TblFactLatLongRain")
-  except:
-    query_result = 'n/a'
-  return str(query_result)
+@app.route('/', methods=("POST", "GET"))
+def html_table():
+    return render_template('rain.html',  tables=[df.to_html(index = False)(classes='data')], titles=df.columns.values)
+
 
 
 #--------- RUN WEB APP SERVER ------------#
