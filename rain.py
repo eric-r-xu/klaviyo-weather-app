@@ -65,6 +65,8 @@ def runQuery(mysql_conn, query):
 def rain_html():
   try:
     query_result = runQuery(mysql_conn, "SELECT * FROM rain.TblFactLatLongRain")
+  except:
+    query_result = 'n/a'
   return str(query_result)
 
 
