@@ -31,7 +31,7 @@ app.config['MYSQL_PASSWORD'] = MYSQL_AUTH['password']
 app.config['MYSQL_DB'] = 'rain'
 
 mysql = MySQL(app)
-last_30_days_mm, last_updated = 'n/a','n/a'
+last_30_days_mm, last_7_days_mm, last_3_days_mm, last_day_mm, last_updated = 'n/a'
 
 @app.route('/rain_history')
 def rain_html():
