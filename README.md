@@ -1,32 +1,25 @@
 # [klaviyo-weather-app](https://www.klaviyo.com/weather-app)
 ## [Top 100 US Cities by Population from 2018 Estimate](https://en.wikipedia.org/wiki/List_of_United_States_cities_by_population)
 ### web application deployment directions
-#### Deployed Ubuntu 20.04 (LTS) x64 Digital Ocean droplet, git version 2.17.1, Python 3.6.9, & MySQL 5.7.41 
-#### subscription app service hosted [here](http://143.198.98.204:1984/klaviyo_weather_app)
-1. *ssh into your Ubuntu server*
-2. *install MySQL (e.g. https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04)*
-3. > sudo apt-get update
-4. > sudo apt-get upgrade
-5. > sudo apt-get install git
-6. > cd ~/
-7. > git clone https://github.com/eric-r-xu/klaviyo-weather-app.git
-8. *follow instructions in **local_settings_template.py** to set up api and mysql credentials and initialize city variables*
-9. > sudo apt install -y python3-pip
-10. > sudo apt-get install python3-setuptools
-11. *install python3 virtual environment and packages using instructions below*
-12. > cd klaviyo-weather-app;sudo apt-get install python3-venv
-13. > sudo apt install build-essential libssl-dev libffi-dev python-dev-is-python3
-14. > python3 -m venv env 
-15. > source ./env/bin/activate
-16. > python -m pip install --upgrade pip
-17. > sudo apt-get install libsasl2-dev libsasl2-2 libsasl2-modules-gssapi-mit
-18. > sudo apt-get install libmysqlclient-dev
-19. > pip install -r ~/klaviyo-weather-app/py3requirements.txt
-20. > python -m pip install git+https://gitea.ksol.io/karolyi/py3-validate-email@v1.0.9
-21. *start the flask app subscription service send log messages to '/tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d)' using step 18*
-22. > nohup /$(whoami)/klaviyo-weather-app/env/bin/python ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &
-23. *cron the daily weather api & email service and log messages to '/tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d)' by adding step 20 into your crontab (e.g. `crontab -e` and enter command below to run at 9 am every morning)*
-24.  > ###### 0 9 * * * /$(whoami)/klaviyo-weather-app/env/bin/python3 /$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py /home/$(whoami)/klaviyo-weather-app/env/bin/python3 > /tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d) 2>&1
+#### Deployed Ubuntu 20.04 (LTS) x64 Digital Ocean droplet, git version 2.17.1, Python 3.10.6, & MySQL 5.7.41 
+#### subscription app service hosted [here](http://ericrxu.com:1984/klaviyo_weather_app)
+1. ssh into host or use Digital Ocean terminal console
+
+2. install MySQL (follow instructions [here](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04))
+
+3. obtain relevant credentials and follow instructions in **local_settings_template.py** for authorization and to initialize city variables
+
+4. update necessary software, setup virtual environment, install git, and  clone this repo
+`sh sh prepare_env.sh`
+
+5. run subscription service flask app. 
+`nohup /$(whoami)/klaviyo-weather-app/env/bin/python ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &`
+
+6. schedule daily weather api & email service with logging to tmp folder.  
+for example use `crontab -e`, specify nano editor, and use cron expression below to run at 9 am every morning (save with ctrl+o and exit with ctrl+x) 
+`9 * * * /$(whoami)/klaviyo-weather-app/env/bin/python3 /$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py /home/$(whoami)/klaviyo-weather-app/env/bin/python3 > /tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d) 2>&1`
+
+DONE!
 
 -----------------------------------------------------------------------------------------------------------------------------
 
