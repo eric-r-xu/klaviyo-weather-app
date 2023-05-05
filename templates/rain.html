@@ -1,1 +1,14 @@
-Past rain data: <div hx-get="/rain" hx-trigger="every 30m"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+{% for table in tables %}
+            {{titles[loop.index]}}
+            {{ table|safe }}
+{% endfor %}
+</body>
+</html>
