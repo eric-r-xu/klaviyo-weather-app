@@ -78,4 +78,6 @@ def html_table():
 
 # Start the app server on port 1080
 app.debug = True
+app.jinja_env.auto_reload = True
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.run(host="0.0.0.0", port=1080, threaded=True)
