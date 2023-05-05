@@ -1,6 +1,7 @@
 ###### PACKAGES ######
 import pandas as pd
 import logging
+import pymysql
 import time
 import dateutil.parser
 import flask
