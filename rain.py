@@ -1,6 +1,7 @@
 ###### PACKAGES ######
 import pandas as pd
 import logging
+import warnings
 import pymysql
 import time
 import dateutil.parser
