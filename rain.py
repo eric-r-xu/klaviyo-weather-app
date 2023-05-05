@@ -57,13 +57,15 @@ mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["pass
 def html_table():
     df = pd.read_sql_query(
         """
-        SELECT DISTINCT 
-            convert_tz(FROM_UNIXTIME(timestampChecked),'UTC','US/Pacific') AS `Last Checked`, 
-            convert_tz(FROM_UNIXTIME(timestampUpdated),'UTC','US/Pacific') AS `Last Updated`,
-            rain_mm_l1h AS `Hourly mm rainfall`
+        SELECT  
+            convert_tz(FROM_UNIXTIME(timestampUpdated),'UTC','US/Pacific') AS "Last Updated",
+            convert_tz(FROM_UNIXTIME(timestampChecked),'UTC','US/Pacific') AS "Last Checked",
+            rain_mm_l1h AS "Hourly Rainfall in mm"
         FROM 
             rain.TblFactLatLongRain 
-        ORDER BY timestampUpdated DESC
+        ORDER BY 
+            1 DESC, 
+            2 DESC
         """,
         mysql_conn,
     )
