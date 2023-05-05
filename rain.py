@@ -58,8 +58,8 @@ def html_table():
     df = pd.read_sql_query(
         """
         SELECT DISTINCT 
-            convert_tz(FROM_UNIXTIME(timestampChecked,'UTC','US/Pacific') AS `Last Checked`, 
-            convert_tz(FROM_UNIXTIME(timestampUpdated,'UTC','US/Pacific') AS `Last Updated`,
+            convert_tz(FROM_UNIXTIME(timestampChecked),'UTC','US/Pacific') AS `Last Checked`, 
+            convert_tz(FROM_UNIXTIME(timestampUpdated),'UTC','US/Pacific') AS `Last Updated`,
             rain_mm_l1h AS `Hourly mm rainfall`
         FROM 
             rain.TblFactLatLongRain 
