@@ -5,9 +5,13 @@
     <title>Title</title>
 </head>
 <body>
-Anton Menlo Past Precipitation Data Table 
+    Anton Menlo Past Precipitation 
+    
+{% for table in tables %}
 
+           
             {{ table|safe }}
+{% endfor %}
 
 </body>
 </html>
