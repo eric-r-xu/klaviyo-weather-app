@@ -52,7 +52,7 @@ df = pd.read_sql_query('SELECT * FROM rain.TblFactLatLongRain ORDER BY timestamp
 
 @app.route('/', methods=("POST", "GET"))
 def html_table():
-    return render_template('rain.html',  tables=[df.to_html(index = False)(classes='data')], titles=df.columns.values)
+    return render_template('rain.html',  tables=[df.to_html(classes='data')], titles=df.columns.values)
 
 
 
