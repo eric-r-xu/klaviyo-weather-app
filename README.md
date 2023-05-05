@@ -1,7 +1,7 @@
-# [klaviyo-weather-app](https://www.klaviyo.com/weather-app)
+# [klaviyo-weather-app](https://www.klaviyo.com/)
 ## [Top 100 US Cities by Population](https://en.wikipedia.org/wiki/List_of_United_States_cities_by_population)
 ### web application deployment directions
-#### Deployed Ubuntu 20.04 (LTS) x64 Digital Ocean droplet, git version 2.17.1, Python 3.10.6, & MySQL 5.7.41 
+#### Deployed on Ubuntu 20.04 (LTS) x64 Digital Ocean droplet with git version 2.17.1, Python 3.10.6, & MySQL 5.7.41 
 #### subscription app service hosted [here](http://ericrxu.com:1984/klaviyo_weather_app)
 1. ssh into host or use Digital Ocean terminal console
 
@@ -9,14 +9,14 @@
 
 3. obtain relevant credentials and follow instructions in **local_settings_template.py** for authorization and to initialize city variables
 
-4. update necessary software, setup virtual environment, install git, and  clone this repo
+4. update necessary software, setup virtual environment, install git, and  clone this repo<br>
 `sh sh prepare_env.sh`
 
-5. run subscription service flask app. 
+5. run subscription service flask app. <br>
 `nohup /$(whoami)/klaviyo-weather-app/env/bin/python ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &`
 
-6. schedule daily weather api & email service with logging to tmp folder.  
-for example use `crontab -e`, specify nano editor, and use cron expression below to run at 9 am every morning (save with ctrl+o and exit with ctrl+x) 
+6. schedule daily weather api & email service with logging to tmp folder. <br> 
+for example use `crontab -e`, specify nano editor, and use cron expression below to run at 9 am every morning (save with ctrl+o and exit with ctrl+x) <br>
 `9 * * * /$(whoami)/klaviyo-weather-app/env/bin/python3 /$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py /home/$(whoami)/klaviyo-weather-app/env/bin/python3 > /tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d) 2>&1`
 
 DONE!
