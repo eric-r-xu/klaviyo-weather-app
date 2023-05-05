@@ -39,19 +39,6 @@ def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
 
 
-def unixtime_to_pacific_datetime(unixtime_timestamp):
-    # Create a timezone object for the Pacific timezone
-    pacific_timezone = pytz.timezone("US/Pacific")
-    # Convert the Unix timestamp to a datetime object in UTC timezone
-    utc_datetime = datetime.datetime.utcfromtimestamp(unixtime_timestamp)
-
-    # Convert the UTC datetime object to the Pacific timezone
-    output = pacific_timezone.localize(utc_datetime).astimezone(pacific_timezone)
-    return str(output)
-
-
-mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
-
 # run query
 def runQuery(mysql_conn, query):
     with mysql_conn.cursor() as cursor:
@@ -63,6 +50,7 @@ def runQuery(mysql_conn, query):
 
 @app.route('/rain')
 def rain_html():
+  mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
   try:
     query_result = runQuery(mysql_conn, "SELECT * FROM rain.TblFactLatLongRain")
   except:
