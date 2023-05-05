@@ -47,10 +47,12 @@ def runQuery(mysql_conn, query):
             warnings.simplefilter("ignore")
             cursor.execute(query)
 
-            
+@app.route('/')
+def rain():
+  return render_template("rain.html")            
 
-@app.route('/rain')
-def rain_html():
+@app.route('/rain_query')
+def rain_query():
   mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
   try:
     query_result = runQuery(mysql_conn, "SELECT * FROM rain.TblFactLatLongRain")
