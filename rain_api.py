@@ -63,7 +63,7 @@ def rain_api_service(mysql_conn):
     query = """DELETE from rain.TblFactLatLongRain where localDateTimeUpdated<date_sub(CURRENT_DATE, interval 90 day) """
     runQuery(mysql_conn, query)
     # current Menlo Park weather api call
-    lat, long = 39.21433, -122.0094
+    lat, long = 39.2143, -122.0094
     r = requests.get(
         f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={long}&appid={OPENWEATHERMAP_AUTH["api_key"]}'
     )
