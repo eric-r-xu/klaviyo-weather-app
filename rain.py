@@ -56,7 +56,15 @@ mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["pass
 @app.route("/", methods=("POST", "GET"))
 def html_table():
     df = pd.read_sql_query(
-        "SELECT * FROM rain.TblFactLatLongRain ORDER BY timestampChecked DESC",
+        """
+        SELECT DISTINCT 
+            convert_tz(FROM_UNIXTIME(timestampChecked,'UTC','US/Pacific') AS `Last Checked`, 
+            convert_tz(FROM_UNIXTIME(timestampUpdated,'UTC','US/Pacific') AS `Last Updated`,
+            rain_mm_l1h AS `Hourly mm rainfall`
+        FROM 
+            rain.TblFactLatLongRain 
+        ORDER BY timestampUpdated DESC
+        """,
         mysql_conn,
     )
     return render_template(
