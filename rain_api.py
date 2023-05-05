@@ -8,6 +8,7 @@ from local_settings import *
 import datetime
 import gc
 import pymysql
+import pytz
 import warnings
 
 app = Flask(__name__)
@@ -36,6 +37,17 @@ def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
 
 
+def unixtime_to_pacific_datetime(unixtime_timestamp):
+    # Create a timezone object for the Pacific timezone
+    pacific_timezone = pytz.timezone("US/Pacific")
+    # Convert the Unix timestamp to a datetime object in UTC timezone
+    utc_datetime = datetime.datetime.utcfromtimestamp(unixtime_timestamp)
+
+    # Convert the UTC datetime object to the Pacific timezone
+    output = pacific_timezone.localize(utc_datetime).astimezone(pacific_timezone)
+    return str(output)
+
+
 mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
 # run query
@@ -53,59 +65,44 @@ def rain_api_service(mysql_conn):
     # current Menlo Park weather api call
     lat, long = 39.21433, -122.0094
     r = requests.get(
-        f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={long}&appid={OPENWEATHERMAP_AUTH["api_key"]}"
-        % (lat, long, OPENWEATHERMAP_AUTH["api_key"])
+        f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={long}&appid={OPENWEATHERMAP_AUTH["api_key"]}'
     )
-    obj = r.json()
-    rain_mm_l1h = 0
-    try:
-      rain_mm_l1h = rainobj['rain']['1h']
-    except: 
-      pass
-      
-      
-    '''
-    `timestampChecked` INT(11) NOT NULL,
-     `localDateTimeChecked` VARCHAR(255) NOT NULL,
-     `timestampUpdated` INT(11) NOT NULL,
-     `localDateTimeUpdated` VARCHAR(255) NOT NULL,
-    `latitude` DECIMAL(5,4) NOT NULL DEFAULT '0.0000',
-    `longitude` DECIMAL(5,4) NOT NULL DEFAULT '0.0000',
-    `rain_mm_l90d` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
-    `rain_mm_l60d` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
-    `rain_mm_l30d` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
-    `rain_mm_l7d` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
-    `rain_mm_l3d` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
-    `rain_mm_l1d` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
-    `rain_mm_l3h` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
-    `rain_mm_l1h` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
-    '''
+    timestampChecked = int(time.time())
+
+    api_result_obj = r.json()
+    rain_mm_l1h, timestampUpdated = 0, api_result_obj["dt"]
+    try:  # rain key will not be present if no rain
+        rain_mm_l1h = api_result_obj["rain"]["1h"]
+    except:
+        pass
+
     query = (
-        f"INSERT INTO rain.TblFactLatLongRain(city_id, dateFact, today_weather, today_max_degrees_F, \
-tomorrow_max_degrees_F) VALUES (%i, '%s', '%s', %i, %i)"
+        "INSERT INTO rain.TblFactLatLongRain(timestampChecked, localDateTimeChecked, timestampUpdated, localDateTimeUpdated, \
+latitude, longitude, rain_mm_l1h) VALUES (%i, '%s', %i, '%s', %.4f, %.4f, %.1f)"
         % (
-            cityID,
-            dateFact,
-            today_weather,
-            today_max_degrees_F,
-            tomorrow_max_degrees_F,
+            timestampChecked,
+            unixtime_to_pacific_datetime(timestampChecked),
+            timestampUpdated,
+            unixtime_to_pacific_datetime(timestampUpdated),
+            lat,
+            long,
+            rain_mm_l1h,
         )
     )
-        runQuery(mysql_conn, query)
-        logging.info(
-            "%s - %s - %s - %s - %s - %s"
-            % (
-                city_dict[str(cityID)],
-                cityID,
-                dateFact,
-                today_weather,
-                today_max_degrees_F,
-                tomorrow_max_degrees_F,
-            )
+    runQuery(mysql_conn, query)
+    logging.info(
+        "%s - %s - %s - %s - %s - %s - %s"
+        % (
+            timestampChecked,
+            unixtime_to_pacific_datetime(timestampChecked),
+            timestampUpdated,
+            unixtime_to_pacific_datetime(timestampUpdated),
+            lat,
+            long,
+            rain_mm_l1h,
         )
-        if _i % 20 == 5:
-            gc.collect()
-    return logging.info("finished calling weather api")
+    )
+    return logging.info("finished calling weather api and updating mysql")
 
 
 # weather api service
