@@ -16,21 +16,24 @@ from flask_limiter.util import get_remote_address
 import initialize_mysql_rain
 from flask_mysqldb import MySQL
 from local_settings import *
+
 ##########################
 
 # ensure info logs are printed
-logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO, datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.basicConfig(
+    format="%(asctime)s %(levelname)s:%(message)s",
+    level=logging.INFO,
+    datefmt="%m/%d/%Y %I:%M:%S %p",
+)
 
 app = Flask(__name__)
 
-limiter = Limiter(
-  app,
-  default_limits=["500 per day", "50 per hour"])
+limiter = Limiter(app, default_limits=["500 per day", "50 per hour"])
 
-app.config['MYSQL_HOST'] = MYSQL_AUTH['host']
-app.config['MYSQL_USER'] = MYSQL_AUTH['user']
-app.config['MYSQL_PASSWORD'] = MYSQL_AUTH['password']
-app.config['MYSQL_DB'] = 'rain'
+app.config["MYSQL_HOST"] = MYSQL_AUTH["host"]
+app.config["MYSQL_USER"] = MYSQL_AUTH["user"]
+app.config["MYSQL_PASSWORD"] = MYSQL_AUTH["password"]
+app.config["MYSQL_DB"] = "rain"
 
 mysql = MySQL(app)
 
@@ -46,18 +49,23 @@ def runQuery(mysql_conn, query):
             warnings.simplefilter("ignore")
             cursor.execute(query)
 
-mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])        
-df = pd.read_sql_query('SELECT * FROM rain.TblFactLatLongRain ORDER BY timestampChecked DESC', mysql_conn)
-            
 
-@app.route('/', methods=("POST", "GET"))
+mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
+
+
+@app.route("/", methods=("POST", "GET"))
 def html_table():
-    return render_template('rain.html',  tables=[df.to_html(classes='data')], titles=df.columns.values)
+    df = pd.read_sql_query(
+        "SELECT * FROM rain.TblFactLatLongRain ORDER BY timestampChecked DESC",
+        mysql_conn,
+    )
+    return render_template(
+        "rain.html", tables=[df.to_html(classes="data")], titles=df.columns.values
+    )
 
 
-
-#--------- RUN WEB APP SERVER ------------#
+# --------- RUN WEB APP SERVER ------------#
 
 # Start the app server on port 1080
 app.debug = True
-app.run(host='0.0.0.0', port=1080, threaded=True)
+app.run(host="0.0.0.0", port=1080, threaded=True)
