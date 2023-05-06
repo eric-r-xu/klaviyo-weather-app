@@ -10,7 +10,7 @@
 3. obtain relevant credentials and follow instructions in **local_settings_template.py** for authorization and to initialize city variables
 
 4. update necessary software, setup virtual environment, install git, and  clone this repo<br>
-`sh sh prepare_env.sh`
+`sh prepare_env.sh`
 
 5. run subscription service flask app. <br>
 `nohup /$(whoami)/klaviyo-weather-app/env/bin/python ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &`
