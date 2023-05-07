@@ -64,25 +64,33 @@ def runQuery(mysql_conn, query):
 
 mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
+@app.route("/rain")
+def rain_home_html():
+    return render_template("rain_update.html")
 
-@app.route("/", methods=("POST", "GET"))
-def html_table():
+
+@app.route("/rain", methods=("POST"))
+def rain_gen_html_table():
     df = pd.read_sql_query(
         """
         SELECT  
+            "All" AS "Level",
+            location_name AS "Location Name",
             convert_tz(FROM_UNIXTIME(timestampUpdated),'UTC','US/Pacific') AS "Last Updated",
-            convert_tz(FROM_UNIXTIME(timestampChecked),'UTC','US/Pacific') AS "Last Checked",
-            rain_1h AS "Hourly Rainfall in mm"
+            convert_tz(FROM_UNIXTIME(timestampChecked),'UTC','US/Pacific')) AS "Last Checked",
+            rain_1h AS "1 hour rainfall in mm",
+            rain_3h AS "3 hour rainfall in mm"
         FROM 
             rain.tblFactLatLon 
         ORDER BY 
-            1 DESC, 
-            2 DESC
+            2 ASC, 
+            3 DESC,
+            4 DESC
         """,
         mysql_conn,
     )
     return render_template(
-        "rain.html", tables=[df.to_html(classes="data")], titles=df.columns.values
+        "rain_all.html", tables=[df.to_html(classes="data")], titles=df.columns.values
     )
 
 
