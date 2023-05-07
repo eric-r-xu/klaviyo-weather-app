@@ -23,13 +23,23 @@ app.config.update(
         MAIL_PASSWORD=GMAIL_AUTH["mail_password"],
     )
 )
+
 email_service = Mail(app)
 
-pacific_tz = pytz.timezone('US/Pacific')
+def timetz(*args):
+    return datetime.now(tz).timetuple()
 
-logging.Formatter.converter = lambda *args: time.gmtime(time.time() - pacific_tz.utcoffset(datetime.datetime.now()).total_seconds())
-logging.basicConfig(filename="/logs/logfile.weather_api_and_email_service.log", format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S %Z')
 
+# log in PST
+tz = timezone("US/Pacific")
+logging.Formatter.converter = timetz
+
+logging.basicConfig(
+    filename="/logs/weather_api_and_email_service.log",
+    format="%(asctime)s %(levelname)s: %(message)s",
+    level=logging.INFO,
+    datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
+)
 
 # connect to sql
 def getSQLConn(host, user, password):
