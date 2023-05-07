@@ -69,10 +69,10 @@ def klaviyo_weather_app_post():
         return str("Unable to validate email address: %s" % i_email)
 
     i_city_name = str(request.form["i_city"])
-    if city_name not in cityNameSet:
+    if i_city_name not in cityNameSet:
         return "Please choose a city from the list"
 
-    i_city_id = int(city_name_to_id['city_name'])
+    i_city_id = int(city_name_to_id[i_city_name])
     cur = mysql.connection.cursor()
     try:
         logging.info(
