@@ -131,4 +131,4 @@ def rain_api_service(mysql_conn, lat_lon_dict):
 
 
 # rain api service
-rain_api_service(mysql_conn)
+rain_api_service(mysql_conn, lat_lon_dict)
