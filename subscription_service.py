@@ -2,6 +2,7 @@
 import pandas as pd
 import logging
 import pytz
+from pytz import timezone
 import time
 import dateutil.parser
 import flask
@@ -25,8 +26,8 @@ def timetz(*args):
     return datetime.now(tz).timetuple()
 
 
-# log in PST
-tz = pytz.timezone("US/Pacific")
+# logging datetime in PST
+tz = timezone("US/Pacific")
 logging.Formatter.converter = timetz
 
 logging.basicConfig(
