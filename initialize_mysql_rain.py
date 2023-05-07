@@ -9,14 +9,15 @@ def getSQLConn(host, user, password):
 
 createSchema = "CREATE SCHEMA IF NOT EXISTS rain;"
 
-createTblFactLatLongRain = """CREATE TABLE IF NOT EXISTS rain.TblFactLatLongRain  
-    (`timestampChecked` INT(11) NOT NULL,
-    `localDateTimeChecked` VARCHAR(255) NOT NULL,
-    `timestampUpdated` INT(11) NOT NULL,
-    `localDateTimeUpdated` VARCHAR(255) NOT NULL,
-    `latitude` DECIMAL(7,4) SIGNED NOT NULL DEFAULT '000.0000',
-    `longitude` DECIMAL(7,4) SIGNED NOT NULL DEFAULT '000.0000',
-    `rain_mm_l1h` DECIMAL(5,1) NOT NULL DEFAULT '0.0',
+createTblFactLatLon = """CREATE TABLE IF NOT EXISTS rain.tblFactLatLon
+    (`dt` INT(11) NOT NULL COMMENT 'unixtimestamp of last api data update',
+    `updated_pacific_time` VARCHAR(255) NOT NULL COMMENT 'Pacific timezone datetime of last api data update',
+    `requested_pacific_time` VARCHAR(255) NOT NULL COMMENT 'Pacific timezone datetime of last api data request',
+    `location_name` VARCHAR(255) NOT NULL COMMENT 'label given for latitude longitude coordinate (e.g. bedwell bayfront park)',
+    `lat` DECIMAL(7,3) SIGNED NOT NULL COMMENT 'latitude coordinate',
+    `lon` DECIMAL(7,3) SIGNED NOT NULL COMMENT 'longitude coordinate',
+    `rain_1h` DECIMAL(5,1) NOT NULL COMMENT 'mm rainfall in last hour',
+    `rain_3h` DECIMAL(5,1) NOT NULL COMMENT 'mm rainfall in last 3 hours', 
     PRIMARY KEY (`timestampChecked`,`timestampUpdated`,`latitude`,`longitude`)) 
     ENGINE=InnoDB DEFAULT CHARSET=latin1;"""
 
@@ -26,4 +27,4 @@ with mysql_conn.cursor() as cursor:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         cursor.execute(createSchema)
-        cursor.execute(createTblFactLatLongRain)
+        cursor.execute(createTblFactLatLon)
