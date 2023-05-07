@@ -76,7 +76,6 @@ def runQuery(mysql_conn, query):
 
 
 def rain_api_service(mysql_conn, lat_lon_dict):
-    runQuery(mysql_conn, query)
     api_key = OPENWEATHERMAP_AUTH["api_key"]
     for location_name in [each for each in lat_lon_dict.keys()]:
         logging.info(f"starting api call for {location_name}")
