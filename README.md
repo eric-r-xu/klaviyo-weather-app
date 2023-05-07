@@ -12,10 +12,10 @@
 4. update necessary software, setup virtual environment, install git, and  clone this repo<br>
 `sh prepare_env.sh`
 
-5. run subscription service flask app. <br>
+5. run subscription service flask app and log output to /tmp/klaviyo-weather-app.subscription_service.log including standard error <br>
 `nohup /$(whoami)/klaviyo-weather-app/env/bin/python ~/klaviyo-weather-app/subscription_service.py >> /tmp/klaviyo-weather-app.subscription_service.log 2>&1 &`
 
-6. schedule daily weather api & email service with logging to tmp folder. <br> 
+6. schedule 9 am daily weather api & email service and log to /tmp/klaviyo-weather-app.weather_api_and_email_service.log folder including standard output. <br> 
 for example use `crontab -e`, specify nano editor, and use cron expression below to run at 9 am every morning (save with ctrl+o and exit with ctrl+x) <br>
 `0 9 * * * /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py >> /tmp/klaviyo-weather-app.weather_api_and_email_service.log 2>&1`
 
