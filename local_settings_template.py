@@ -133,4 +133,4 @@ city_dict = {
 
 cityIDset = {int(x) for x in city_dict.keys()}
 cityNameSet = {str(x) for x in city_dict.values()}
-valid_city_set = {" : ".join([y, x]) for x, y in city_dict.items()}
+city_name_to_id = {v: k for k, v in city_dict.items()}
