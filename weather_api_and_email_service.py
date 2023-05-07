@@ -25,15 +25,10 @@ app.config.update(
 )
 email_service = Mail(app)
 
-logging.basicConfig(
-    filename="/logs/logfile.weather_api_and_email_service.log",
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S %Z",
-    force=True,
-)
+pacific_tz = pytz.timezone('US/Pacific')
 
-pacific_tz = pytz.timezone("US/Pacific")
+logging.Formatter.converter = lambda *args: time.gmtime(time.time() - pacific_tz.utcoffset(datetime.datetime.now()).total_seconds())
+logging.basicConfig(filename="/logs/logfile.weather_api_and_email_service.log", format='%(asctime)s %(levelname)s:%(message)s', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S %Z')
 
 
 # connect to sql
