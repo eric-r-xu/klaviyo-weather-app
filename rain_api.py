@@ -80,8 +80,8 @@ def rain_api_service(mysql_conn, lat_lon_dict):
     for location_name in [each for each in lat_lon_dict.keys()]:
         logging.info(f"starting api call for {location_name}")
         lat, lon, api_key = (
-            lat_lon_dict[place_name]["lat"],
-            lat_lon_dict[place_name]["lon"],
+            lat_lon_dict[location_name]["lat"],
+            lat_lon_dict[location_name]["lon"],
         )
         api_link = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={long}&appid={api_key}"
         r = requests.get(api_link)
