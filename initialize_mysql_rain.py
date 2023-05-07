@@ -4,6 +4,8 @@ import pandas as pd
 import datetime
 import pytz
 from local_settings import *
+import logging
+
 
 # connect to sql
 def getSQLConn(host, user, password):
