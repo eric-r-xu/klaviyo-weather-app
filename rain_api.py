@@ -74,7 +74,7 @@ def rain_api_service(mysql_conn, lat_lon_dict):
         )
         api_link = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}"
         r = requests.get(api_link)
-        logging.info('finished getting {api_link} data')
+        logging.info(f'finished getting {api_link} data')
         requested_dt = int(time.time())
         api_result_obj = r.json()
         rain_1h, rain_3h, dt = 0, 0, api_result_obj["dt"]
