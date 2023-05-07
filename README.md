@@ -13,11 +13,11 @@
 `sh prepare_env.sh`
 
 5. run subscription service flask app. <br>
-`nohup /$(whoami)/klaviyo-weather-app/env/bin/python ~/klaviyo-weather-app/subscription_service.py > /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &`
+`nohup /$(whoami)/klaviyo-weather-app/env/bin/python ~/klaviyo-weather-app/subscription_service.py >> /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d) &`
 
 6. schedule daily weather api & email service with logging to tmp folder. <br> 
 for example use `crontab -e`, specify nano editor, and use cron expression below to run at 9 am every morning (save with ctrl+o and exit with ctrl+x) <br>
-`9 * * * /$(whoami)/klaviyo-weather-app/env/bin/python3 /$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py /home/$(whoami)/klaviyo-weather-app/env/bin/python3 > /tmp/klaviyo-weather-app.weather_api_and_email_service.log.$(date +\%Y\%m\%d) 2>&1`
+`0 9 * * * /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py >> /tmp/klaviyo-weather-app.weather_api_and_email_service.log`
 
 DONE!
 
