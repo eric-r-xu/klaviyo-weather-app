@@ -5,7 +5,6 @@ import datetime
 import pytz
 from local_settings import *
 
-preload = 1
 # connect to sql
 def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
