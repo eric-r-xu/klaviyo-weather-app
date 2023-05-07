@@ -69,7 +69,7 @@ def rain_home_html():
     return render_template("rain_update.html")
 
 
-@app.route("/rain", methods=("POST"))
+@app.route("/rain", methods=(["POST"]))
 def rain_gen_html_table():
     df = pd.read_sql_query(
         """
