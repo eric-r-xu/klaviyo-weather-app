@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Weather Powered Email</title>
+<title>Past Precipitation</title>
 <style>
 body {
   font-family: Verdana,Arial,sans-serif;
@@ -30,30 +30,16 @@ h2 {
 </style>
 </head>
 <body>
-<img src="/static/klaviyo_logo.svg" alt="Klaviyo Logo"> 
-<h1>WEATHER POWERED EMAIL</h1>
+<img src="/static/past_rain.png" alt="Rain"> 
+<h1>Past Precipitation</h1>
 <hr>
 <h2>
-email subscriptions will expire after 10 days
-<br>
-weather powered emails will be sent daily starting at 9 am pacific time
-<br>
-please check spam folder and ensure emails from "eric.r.xu@gmail.com" make it to your inbox
 </h2>
-<form action="./klaviyo_weather_app" method="POST">
-Email Address: <br>
-<textarea rows="1" cols="35" name="i_email"></textarea>
-<br><br>
-Location: <br>
-<input list="cities" placeholder="Where do you live? Choose from list." name="i_city" style="width: 300px;">
-<datalist id="cities">
-{% for cityName in cityNameSet %}
-<option value="{{cityName}}" >
-{% endfor %}
+<form action="./rain" method="POST">
 </datalist>
 <br><br><br><br>
 <hr>
-<button type="submit" class="block" name="i_button">SUBSCRIBE</button>
+<button type="submit" class="block" name="i_button">Click for Latest Past Precipitation</button>
 </form>
 </body>
 </html>
