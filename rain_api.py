@@ -78,8 +78,8 @@ def runQuery(mysql_conn, query):
 def rain_api_service(mysql_conn, lat_lon_dict):
     runQuery(mysql_conn, query)
     api_key = OPENWEATHERMAP_AUTH["api_key"]
-    for place_name in [each for each in lat_lon_dict.keys()]:
-        logging.info(f"starting api call for {place_name}")
+    for location_name in [each for each in lat_lon_dict.keys()]:
+        logging.info(f"starting api call for {location_name}")
         lat, lon, api_key = (
             lat_lon_dict[place_name]["lat"],
             lat_lon_dict[place_name]["lon"],
@@ -100,29 +100,31 @@ def rain_api_service(mysql_conn, lat_lon_dict):
             pass
 
         query = (
-            "INSERT INTO rain.TblFactLatLongRain(timestampChecked, localDateTimeChecked, timestampUpdated, localDateTimeUpdated, latitude, longitude, rain_mm_l1h) VALUES (%i, '%s', %i, '%s', %.4f, %.4f, %.1f)"
+            "INSERT INTO rain.tblFactLatLon(dt, updated_pacific_time, requested_pacific_time, location_name, lat, lon, rain_1h, rain_3h) VALUES (%i, '%s', '%s', '%s', %.3f, %.3f, %.1f, %.1f)"
             % (
-                timestampChecked,
-                unixtime_to_pacific_datetime(timestampChecked),
                 timestampUpdated,
                 unixtime_to_pacific_datetime(timestampUpdated),
+                unixtime_to_pacific_datetime(timestampChecked),
+                location_name,
                 lat,
-                long,
-                rain_mm_l1h,
+                lon,
+                rain_1h,
+                rain_3h,
             )
         )
         logging.info("query=%s" % (query))
         runQuery(mysql_conn, query)
         logging.info(
-            "%s - %s - %s - %s - %s - %s - %s"
+            "%s - %s - %s - %s - %s - %s - %s - %s"
             % (
-                timestampChecked,
-                unixtime_to_pacific_datetime(timestampChecked),
                 timestampUpdated,
                 unixtime_to_pacific_datetime(timestampUpdated),
+                unixtime_to_pacific_datetime(timestampChecked),
+                location_name,
                 lat,
-                long,
-                rain_mm_l1h,
+                lon,
+                rain_1h,
+                rain_3h,
             )
         )
     return logging.info("finished calling weather api and updating mysql")
