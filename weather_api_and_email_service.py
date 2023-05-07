@@ -27,7 +27,7 @@ app.config.update(
 email_service = Mail(app)
 
 def timetz(*args):
-    return datetime.now(tz).timetuple()
+    return datetime.datetime.now(tz).timetuple()
 
 
 # log in PST
