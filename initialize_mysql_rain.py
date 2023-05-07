@@ -34,7 +34,7 @@ with mysql_conn.cursor() as cursor:
 
         
 
-df = pd.read_csv('initial_data.csv', index = False).fillna(0)
+df = pd.read_csv('initial_data.csv').fillna(0)
 requested_pacific_time = "2023-05-06"
 for index, row in df.iterrows():
     query = (
