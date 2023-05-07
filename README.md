@@ -45,7 +45,7 @@ DONE!
 ## Security 
 ##### How does your app handle invalid or even malicious input from users?
 
->The subscription page checks for the validity of the email and limits the number of requests per remote address (50/hour and 200/day).  For edge cases not considered, please check the log file in /tmp/klaviyo-weather-app.subscription_service.log.$(date +\%Y\%m\%d)
+>The subscription page checks for the validity of the email and limits the number of requests per remote address (50/hour and 200/day).  For errors, please check for edge cases not considered in the log file
 
 ## Re-Usability 
 ##### What components of your app would make sense to be their own modules or services so they can be re-used by other sections of code later?
@@ -54,11 +54,11 @@ DONE!
 
 >1st component: SUBSCRIPTION APPLICATION SERVICE -- renders the subscription form html, validates/limits requests, and maintains MySQL subscription table tblDimEmailCity
 
->2nd component: WEATHER API SERVICE -- calls weather api (https://www.weatherbit.io/api) and maintains MySQL table tblFactCityWeather
+>2nd component: WEATHER API SERVICE -- calls [open weather api]([https://www.weatherbit.io/api](https://openweathermap.org/api)) and maintains MySQL table tblFactCityWeather
 
 >3rd component: WEATHER EMAIL SERVICE -- purges old subscriptions in MySQL table tblDimEmailCity and sends weather powered emails based on MySQL tables tblDimEmailCity and tblFactCityWeather
 
->If the utilized Ubuntu server was upgraded to have >=4 gb RAM, a task scheduler service like airflow (https://airflow.apache.org/) could be useful to track and log the WEATHER API and WEATHER EMAIL services as their own operator tasks within a DAG.  The airflow webserver can then be started to log, track, and visualize task failures as well as task durations in an intuitive manner.  If more cpu/memory is needed to meet timing requirements, consider running airflow with a distributed architecture using Celery (see https://medium.com/@manuelmourato25/when-airflow-isnt-fast-enough-distributed-orchestration-of-multiple-small-workloads-with-celery-afb3daebe611).
+>If the utilized Ubuntu server was upgraded to have >=4 gb RAM, a task scheduler service like [airflow](https://airflow.apache.org/) could be useful to track and log the WEATHER API and WEATHER EMAIL services as their own operator tasks within a DAG.  The airflow webserver can then be started to log, track, and visualize task failures as well as task durations in an intuitive manner.  If more cpu/memory is needed to meet timing requirements, consider running airflow with a distributed architecture using Celery (see [here](https://medium.com/@manuelmourato25/when-airflow-isnt-fast-enough-distributed-orchestration-of-multiple-small-workloads-with-celery-afb3daebe611)).
 
 ## Re-Inventing the Wheel? 
 ##### We're big believers in not building what's already been built. Of course there are trade offs, so how did you decide whether to build functionality yourself or use existing solutions to make your job easier?
@@ -71,13 +71,13 @@ DONE!
 
 >(c) time is critical & the language(s) and/or abstraction layer(s) are unfamiliar or complex
 
->The current weather app is built using Flask, a popular open-source microframework for creating flexible and lightweight web applications.  Instead of reinventing the wheel (or my own logic), I opted to use a popular python3 package for validating email addresses (https://pypi.org/project/py3-validate-email/) with added functionality such as domain validation and blacklist exclusion.
+>The current weather app is built using Flask, a popular open-source microframework for creating flexible and lightweight web applications.  Instead of reinventing the wheel (or my own logic), I opted to use a popular python3 package for validating email addresses with added functionality such as domain validation and blacklist exclusion.
 
 
 ## Usability 
 ##### It's important that Klaviyo be easy to use — both for our users and the people they're emailing. How could your app be easier (or maybe more fun) to use?
 
->I believe the app could be easier & more intuitive to use by allowing users to specify what frequency and what local time they prefer to receive the weather powered email (currently, the emails are sent once daily starting at 9 am EDT).  Adding the functionality to subscribe more than one email at a time could also help with ease of use.
+>I believe the app could be easier & more intuitive to use by allowing users to specify what frequency and what local time they prefer to receive the weather powered email (currently, the emails are sent once daily starting at 9 am PST).  Adding the functionality to subscribe more than one email at a time could also help with ease of use.
 
 
 >I believe the weather powered email could be more fun/engaging to the subscribed users by displaying interesting factoids of weather data historically for each subscriber's city as well data on the other 99 US cities.  
