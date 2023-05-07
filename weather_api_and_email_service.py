@@ -23,13 +23,13 @@ app.config.update(
     )
 )
 email_service = Mail(app)
-
-# ensure info logs are printed
 logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(message)s",
+    filename="/logs/logfile.weather_api_and_email_service.log",
     level=logging.INFO,
-    datefmt="%m/%d/%Y %I:%M:%S %p",
+    format="%(asctime)s %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S %z",
 )
+
 
 # connect to sql
 def getSQLConn(host, user, password):
