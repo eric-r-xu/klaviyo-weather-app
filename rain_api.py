@@ -25,12 +25,21 @@ app.config.update(
 )
 email_service = Mail(app)
 
-# ensure info logs are printed
+def timetz(*args):
+    return datetime.datetime.now(tz).timetuple()
+
+
+# logging datetime in PST
+tz = timezone("US/Pacific")
+logging.Formatter.converter = timetz
+
 logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(message)s",
+    filename="/logs/rain_api.log",
+    format="%(asctime)s %(levelname)s: %(message)s",
     level=logging.INFO,
-    datefmt="%m/%d/%Y %I:%M:%S %p",
+    datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
 )
+
 
 # connect to sql
 def getSQLConn(host, user, password):
@@ -50,6 +59,16 @@ def unixtime_to_pacific_datetime(unixtime_timestamp):
 
 mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
+lat_lon_dict = {
+    'Bedwell Bayfront Park': {'lat':37.493,
+                              'lon':-122.173},
+    'Urbana, Illinois': {'lat': 40.113,
+                         'lon': -88.211
+                       }
+}
+
+
+
 # run query
 def runQuery(mysql_conn, query):
     with mysql_conn.cursor() as cursor:
@@ -58,49 +77,54 @@ def runQuery(mysql_conn, query):
             cursor.execute(query)
 
 
-def rain_api_service(mysql_conn):
-    # truncate table tblFactCityWeather with current data and data older than 90 days
-    query = """DELETE from rain.TblFactLatLongRain where localDateTimeUpdated<date_sub(CURRENT_DATE, interval 90 day) """
+def rain_api_service(mysql_conn, lat_lon_dict):
     runQuery(mysql_conn, query)
-    # current Menlo Park weather api call
-    lat, long, api_key = 39.2143, -122.0094, OPENWEATHERMAP_AUTH["api_key"]
-    api_link = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={long}&appid={api_key}'
-    r = requests.get(api_link)
-    print('query=%s' % (query))
-    timestampChecked = int(time.time())
-    api_result_obj = r.json()
-    rain_mm_l1h, timestampUpdated = 0, api_result_obj["dt"]
-    try:  # rain key will not be present if no rain
-        rain_mm_l1h = api_result_obj["rain"]["1h"]
-    except:
-        pass
-
-    query = (
-        "INSERT INTO rain.TblFactLatLongRain(timestampChecked, localDateTimeChecked, timestampUpdated, localDateTimeUpdated, latitude, longitude, rain_mm_l1h) VALUES (%i, '%s', %i, '%s', %.4f, %.4f, %.1f)"
-        % (
-            timestampChecked,
-            unixtime_to_pacific_datetime(timestampChecked),
-            timestampUpdated,
-            unixtime_to_pacific_datetime(timestampUpdated),
-            lat,
-            long,
-            rain_mm_l1h,
+    api_key = OPENWEATHERMAP_AUTH["api_key"]
+    for place_name in [each for each in lat_lon_dict.keys()]:
+        logging.info(f'starting api call for {place_name})
+        lat, lon, api_key = lat_lon_dict[place_name]['lat'], lat_lon_dict[place_name]['lon']
+        api_link = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={long}&appid={api_key}'
+        r = requests.get(api_link)
+        logging.info('query=%s' % (query))
+        timestampChecked = int(time.time())
+        api_result_obj = r.json()
+        rain_1h, rain_3h, timestampUpdated = 0, 0, api_result_obj["dt"]
+        try:  
+            rain_1h = api_result_obj["rain"]["1h"]
+        except:
+            pass
+        try:  
+            rain_3h = api_result_obj["rain"]["3h"]
+        except:
+            pass
+                   
+                     
+        query = (
+            "INSERT INTO rain.TblFactLatLongRain(timestampChecked, localDateTimeChecked, timestampUpdated, localDateTimeUpdated, latitude, longitude, rain_mm_l1h) VALUES (%i, '%s', %i, '%s', %.4f, %.4f, %.1f)"
+            % (
+                timestampChecked,
+                unixtime_to_pacific_datetime(timestampChecked),
+                timestampUpdated,
+                unixtime_to_pacific_datetime(timestampUpdated),
+                lat,
+                long,
+                rain_mm_l1h,
+            )
         )
-    )
-    print('query=%s' % (query))
-    runQuery(mysql_conn, query)
-    logging.info(
-        "%s - %s - %s - %s - %s - %s - %s"
-        % (
-            timestampChecked,
-            unixtime_to_pacific_datetime(timestampChecked),
-            timestampUpdated,
-            unixtime_to_pacific_datetime(timestampUpdated),
-            lat,
-            long,
-            rain_mm_l1h,
+        logging.info('query=%s' % (query))
+        runQuery(mysql_conn, query)
+        logging.info(
+            "%s - %s - %s - %s - %s - %s - %s"
+            % (
+                timestampChecked,
+                unixtime_to_pacific_datetime(timestampChecked),
+                timestampUpdated,
+                unixtime_to_pacific_datetime(timestampUpdated),
+                lat,
+                long,
+                rain_mm_l1h,
+            )
         )
-    )
     return logging.info("finished calling weather api and updating mysql")
 
 
