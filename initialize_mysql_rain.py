@@ -56,7 +56,7 @@ df = pd.read_csv("initial_data.csv").fillna(0)
 requested_dt = 1683435668
 for index, row in df.iterrows():
     query = (
-        "INSERT INTO rain.tblFactLatLon(dt, requested_dt, location_name, lat, lon, rain_1h, rain_3h) VALUES (%i, %i, '%s', %.3f, %.3f, %.1f, %.1f)"
+        "INSERT IGNORE INTO rain.tblFactLatLon(dt, requested_dt, location_name, lat, lon, rain_1h, rain_3h) VALUES (%i, %i, '%s', %.3f, %.3f, %.1f, %.1f)"
         % (
             row["dt"],
             requested_dt,
