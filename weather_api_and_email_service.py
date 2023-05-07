@@ -31,7 +31,7 @@ def timetz(*args):
 
 
 # log in PST
-tz = timezone("US/Pacific")
+tz = pytz.timezone("US/Pacific")
 logging.Formatter.converter = timetz
 
 logging.basicConfig(
