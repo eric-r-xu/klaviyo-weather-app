@@ -10,7 +10,7 @@ import gc
 import pymysql
 import pytz
 import warnings
-import initialize_mysql_rain
+# run python initialize_mysql_rain first
 
 app = Flask(__name__)
 app.config.update(
