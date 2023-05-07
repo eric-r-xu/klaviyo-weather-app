@@ -3,6 +3,8 @@ import pandas as pd
 import logging
 import warnings
 import pymysql
+from pytz import timezone
+import pytz
 import time
 import dateutil.parser
 import flask
@@ -19,11 +21,20 @@ from local_settings import *
 
 ##########################
 
-# ensure info logs are printed
+
+def timetz(*args):
+    return datetime.now(tz).timetuple()
+
+
+# logging datetime in PST
+tz = timezone("US/Pacific")
+logging.Formatter.converter = timetz
+
 logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(message)s",
+    filename="/logs/rain.log",
+    format="%(asctime)s %(levelname)s: %(message)s",
     level=logging.INFO,
-    datefmt="%m/%d/%Y %I:%M:%S %p",
+    datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
 )
 
 app = Flask(__name__)
