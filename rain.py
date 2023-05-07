@@ -8,6 +8,7 @@ import pytz
 import time
 import dateutil.parser
 import flask
+import datetime
 import numpy as np
 from functools import wraps
 from flask import Flask, request, Response, render_template
@@ -23,7 +24,7 @@ from local_settings import *
 
 
 def timetz(*args):
-    return datetime.now(tz).timetuple()
+    return datetime.datetime.now(tz).timetuple()
 
 
 # logging datetime in PST
@@ -71,9 +72,9 @@ def html_table():
         SELECT  
             convert_tz(FROM_UNIXTIME(timestampUpdated),'UTC','US/Pacific') AS "Last Updated",
             convert_tz(FROM_UNIXTIME(timestampChecked),'UTC','US/Pacific') AS "Last Checked",
-            rain_mm_l1h AS "Hourly Rainfall in mm"
+            rain_1h AS "Hourly Rainfall in mm"
         FROM 
-            rain.TblFactLatLongRain 
+            rain.tblFactLatLon 
         ORDER BY 
             1 DESC, 
             2 DESC
