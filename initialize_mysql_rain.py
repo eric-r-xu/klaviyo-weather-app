@@ -74,7 +74,6 @@ for index, row in df.iterrows():
         % (
             row["dt"],
             requested_dt,
-            requested_pacific_time,
             row["city_name"],
             row["lat"],
             row["lon"],
