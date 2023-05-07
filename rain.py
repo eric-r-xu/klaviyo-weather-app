@@ -77,7 +77,7 @@ def rain_gen_html_table():
             "All" AS "Level",
             location_name AS "Location Name",
             CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS "Last Updated Time (PST)",
-            CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS "Last Checked Time (PST)",
+            CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific') AS "Last Checked Time (PST)",
             rain_1h AS "mm Rain Last Hour",
             rain_3h AS "mm Rain Last 3 Hours"
         FROM 
