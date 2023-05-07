@@ -55,7 +55,7 @@ update_builtin_blacklist(force=True, background=True)
 
 @app.route("/klaviyo_weather_app")
 def klaviyo_weather_app_html():
-    return render_template("subscribe.html")
+    return render_template("subscribe.html", cityNameSet=cityNameSet)
 
 
 @app.route("/klaviyo_weather_app", methods=["POST"])
@@ -68,11 +68,11 @@ def klaviyo_weather_app_post():
     if is_valid == False:
         return str("Unable to validate email address: %s" % i_email)
 
-    i_city = str(request.form["i_city"])
-    if i_city not in valid_city_set:
-        return "Please choose a valid city from the list of 100 most populous US cities"
+    i_city_name = str(request.form["i_city"])
+    if city_name not in cityNameSet:
+        return "Please choose a city from the list"
 
-    i_city_id, i_city_name = int(i_city.split(" : ")[1]), i_city.split(" : ")[0]
+    i_city_id = int(city_name_to_id['city_name'])
     cur = mysql.connection.cursor()
     try:
         logging.info(
