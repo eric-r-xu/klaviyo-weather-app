@@ -24,7 +24,7 @@ app.config.update(
     )
 )
 email_service = Mail(app)
-pacific_tz = pytz.timezone("US/Pacific")
+
 logging.basicConfig(
     filename="/logs/logfile.weather_api_and_email_service.log",
     level=logging.INFO,
@@ -32,6 +32,8 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S %Z",
     force=True,
 )
+
+pacific_tz = pytz.timezone("US/Pacific")
 
 
 # connect to sql
