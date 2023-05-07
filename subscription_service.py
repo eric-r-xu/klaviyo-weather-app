@@ -24,7 +24,7 @@ from validate_email.updater import update_builtin_blacklist
 
 
 def timetz(*args):
-    return datetime.now(tz).timetuple()
+    return datetime.datetime.now(tz).timetuple()
 
 
 # logging datetime in PST
