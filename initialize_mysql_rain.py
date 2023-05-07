@@ -16,14 +16,13 @@ createSchema = "CREATE SCHEMA IF NOT EXISTS rain;"
 
 createTblFactLatLon = """CREATE TABLE IF NOT EXISTS rain.tblFactLatLon
     (`dt` INT(11) NOT NULL COMMENT 'unixtimestamp of last api data update',
-    `updated_pacific_time` VARCHAR(255) NOT NULL COMMENT 'Pacific timezone datetime of last api data update',
-    `requested_pacific_time` VARCHAR(255) COMMENT 'Pacific timezone datetime of last api data request',
-    `location_name` VARCHAR(255) NOT NULL COMMENT 'label given for latitude longitude coordinate (e.g. bedwell bayfront park)',
+    `requested_dt` INT(11) NOT NULL COMMENT 'unixtimestamp of last api data request',
+    `location_name` VARCHAR(255) NOT NULL COMMENT 'label given for latitude longitude coordinate (e.g. Bedwell Bayfront Park)',
     `lat` DECIMAL(7,3) SIGNED NOT NULL COMMENT 'latitude coordinate',
     `lon` DECIMAL(7,3) SIGNED NOT NULL COMMENT 'longitude coordinate',
     `rain_1h` DECIMAL(5,1) NOT NULL COMMENT 'mm rainfall in last hour',
     `rain_3h` DECIMAL(5,1) NOT NULL COMMENT 'mm rainfall in last 3 hours', 
-    PRIMARY KEY (`dt`,`lat`,`lon`)) 
+    PRIMARY KEY (`dt`,`lat`,`lon`,`requested_dt`)) 
     ENGINE=InnoDB DEFAULT CHARSET=latin1;"""
 
 mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
@@ -54,14 +53,13 @@ def unixtime_to_pacific_datetime(unixtime_timestamp):
 
 
 df = pd.read_csv("initial_data.csv").fillna(0)
-requested_pacific_time = "2023-05-06"
+requested_dt = 1683435668
 for index, row in df.iterrows():
     query = (
-        "INSERT INTO rain.tblFactLatLon(dt, updated_pacific_time, requested_pacific_time, location_name, lat, lon, rain_1h, rain_3h) VALUES (%i, '%s', '%s', '%s', %.3f, %.3f, %.1f, %.1f)"
+        "INSERT INTO rain.tblFactLatLon(dt, requested_dt, location_name, lat, lon, rain_1h, rain_3h) VALUES (%i, %i, '%s', %.3f, %.3f, %.1f, %.1f)"
         % (
             row["dt"],
-            unixtime_to_pacific_datetime(int(row["dt"])),
-            requested_pacific_time,
+            requested_dt,
             row["city_name"],
             row["lat"],
             row["lon"],
@@ -72,10 +70,10 @@ for index, row in df.iterrows():
     logging.info("query=%s" % (query))
     runQuery(mysql_conn, query)
     logging.info(
-        "%s - %s - %s - %s - %s - %s - %s - %s"
+        "%s - %s - %s - %s - %s - %s - %s"
         % (
             row["dt"],
-            unixtime_to_pacific_datetime(int(row["dt"])),
+            requested_dt,
             requested_pacific_time,
             row["city_name"],
             row["lat"],
