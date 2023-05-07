@@ -48,17 +48,6 @@ def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
 
 
-def unixtime_to_pacific_datetime(unixtime_timestamp):
-    # Create a timezone object for the Pacific timezone
-    pacific_timezone = pytz.timezone("US/Pacific")
-    # Convert the Unix timestamp to a datetime object in UTC timezone
-    utc_datetime = datetime.datetime.utcfromtimestamp(unixtime_timestamp)
-
-    # Convert the UTC datetime object to the Pacific timezone
-    output = pacific_timezone.localize(utc_datetime).astimezone(pacific_timezone)
-    return str(output)
-
-
 mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
 lat_lon_dict = {
@@ -88,7 +77,7 @@ def rain_api_service(mysql_conn, lat_lon_dict):
         logging.info('finished getting {api_link} data')
         timestampChecked = int(time.time())
         api_result_obj = r.json()
-        rain_1h, rain_3h, timestampUpdated = 0, 0, api_result_obj["dt"]
+        rain_1h, rain_3h, dt = 0, 0, api_result_obj["dt"]
         try:
             rain_1h = api_result_obj["rain"]["1h"]
         except:
@@ -99,11 +88,10 @@ def rain_api_service(mysql_conn, lat_lon_dict):
             pass
 
         query = (
-            "INSERT INTO rain.tblFactLatLon(dt, updated_pacific_time, requested_pacific_time, location_name, lat, lon, rain_1h, rain_3h) VALUES (%i, '%s', '%s', '%s', %.3f, %.3f, %.1f, %.1f)"
+            "INSERT INTO rain.tblFactLatLon(dt, requested_dt, location_name, lat, lon, rain_1h, rain_3h) VALUES (%i, %i, '%s', %.3f, %.3f, %.1f, %.1f)"
             % (
-                timestampUpdated,
-                unixtime_to_pacific_datetime(timestampUpdated),
-                unixtime_to_pacific_datetime(timestampChecked),
+                dt,
+                requested_dt,
                 location_name,
                 lat,
                 lon,
@@ -114,11 +102,10 @@ def rain_api_service(mysql_conn, lat_lon_dict):
         logging.info("query=%s" % (query))
         runQuery(mysql_conn, query)
         logging.info(
-            "%s - %s - %s - %s - %s - %s - %s - %s"
+            "%s - %s - %s - %s - %s - %s - %s"
             % (
-                timestampUpdated,
-                unixtime_to_pacific_datetime(timestampUpdated),
-                unixtime_to_pacific_datetime(timestampChecked),
+                dt,
+                requested_dt,
                 location_name,
                 lat,
                 lon,
