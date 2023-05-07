@@ -78,8 +78,8 @@ def rain_gen_html_table():
             location_name AS "Location Name",
             convert_tz(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS "Last Updated",
             convert_tz(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS "Last Checked",
-            rain_1h AS "1 hour rainfall in mm",
-            rain_3h AS "3 hour rainfall in mm"
+            rain_1h AS "mm Rain Last Hour",
+            rain_3h AS "mm Rain Last 3 Hours"
         FROM 
             rain.tblFactLatLon 
         ORDER BY 
