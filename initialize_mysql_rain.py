@@ -33,6 +33,13 @@ with mysql_conn.cursor() as cursor:
         warnings.simplefilter("ignore")
         cursor.execute(createSchema)
         cursor.execute(createTblFactLatLon)
+        
+ # run query
+def runQuery(mysql_conn, query):
+    with mysql_conn.cursor() as cursor:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            cursor.execute(query)
 
 
 def unixtime_to_pacific_datetime(unixtime_timestamp):
