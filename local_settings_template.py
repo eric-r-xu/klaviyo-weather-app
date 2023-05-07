@@ -24,6 +24,7 @@ GMAIL_AUTH = {
 }
 
 ####################################################################################
+# Most populated cities in US and then some
 city_dict = {
     "5128594": "New York, New York",
     "3882428": "Los Angeles, California",
@@ -125,7 +126,11 @@ city_dict = {
     "4781708": "Richmond, Virginia",
     "4315588": "Baton Rouge, Louisiana",
     "5811696": "Spokane, Washington",
+    "5372223": "Menlo Park, CA",
+    "5373327": "Milpitas, CA",
+    "1796236": "Shanghai, China",
 }
 
 cityIDset = {int(x) for x in city_dict.keys()}
+cityNameSet = {str(x) for x in city_dict.values()}
 valid_city_set = {" : ".join([y, x]) for x, y in city_dict.items()}
