@@ -4,6 +4,7 @@ import pandas as pd
 import logging
 import requests
 import time
+import pytz
 from local_settings import *
 import datetime
 import gc
@@ -23,11 +24,13 @@ app.config.update(
     )
 )
 email_service = Mail(app)
+pacific_tz = pytz.timezone("US/Pacific")
 logging.basicConfig(
     filename="/logs/logfile.weather_api_and_email_service.log",
     level=logging.INFO,
     format="%(asctime)s %(levelname)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S %z",
+    datefmt="%Y-%m-%d %H:%M:%S %Z",
+    force=True,
 )
 
 
