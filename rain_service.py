@@ -33,7 +33,7 @@ tz = timezone("US/Pacific")
 logging.Formatter.converter = timetz
 
 logging.basicConfig(
-    filename="/logs/rain.log",
+    filename="/logs/rain_service.log",
     format="%(asctime)s %(levelname)s: %(message)s",
     level=logging.INFO,
     datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
