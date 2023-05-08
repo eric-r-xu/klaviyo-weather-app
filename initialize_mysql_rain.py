@@ -14,7 +14,7 @@ lat_lon_dict = {
     "Lake Quannapowitt": {"lat":42.514, "lon": -88.211, "lon": -71.078},
 }
 
-location_names = [lat_lon_dict.keys()]
+location_names = [x for x in lat_lon_dict.keys()]
 
 # connect to sql
 def getSQLConn(host, user, password):
