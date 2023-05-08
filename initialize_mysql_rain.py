@@ -61,7 +61,7 @@ def unixtime_to_pacific_datetime(unixtime_timestamp):
     return str(output)
 
 
-if load_initial_data == 
+if load_initial_data == True:
     df = pd.read_csv("initial_data.csv").fillna(0)
     requested_dt = 1683435668
     for index, row in df.iterrows():
