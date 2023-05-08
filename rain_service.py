@@ -67,7 +67,7 @@ mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["pass
 
 @app.route("/rain")
 def rain_home_html():
-    return render_template("rain_update.html", location_names=location_names)
+    return render_template("rain_service.html", location_names=location_names)
 
 
 @app.route("/rain", methods=(["POST"]))
@@ -93,7 +93,7 @@ def rain_gen_html_table():
         mysql_conn,
     )
     return render_template(
-        "rain_all.html", tables=[df.to_html(classes="data")], titles=df.columns.values
+        "rain_service_result.html", tables=[df.to_html(classes="data")], titles=df.columns.values
     )
 
 
