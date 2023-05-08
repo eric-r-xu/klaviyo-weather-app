@@ -32,6 +32,15 @@ h2 {
 <body>
 <h1>Past Precipitation</h1>
 <form action="./rain" method="POST">
+Location Name: <br>
+<input list="location_name" placeholder="Which location name? Choose from list." name="i_location_name" style="width: 300px;">
+<datalist id="location_name">
+{% for location_name in location_names %}
+<option value="{{location_name}}" >
+{% endfor %}
+</datalist>
+<br>
+<br>
 <br><button type="submit" class="block" name="i_button">Click for Latest Past Precipitation</button>
 <img src="/static/past_rain.jpeg" alt="Rain"> 
 </form>
