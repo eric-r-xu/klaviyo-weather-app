@@ -20,6 +20,7 @@ import initialize_mysql_rain
 from flask_mysqldb import MySQL
 from local_settings import *
 import initialize_mysql_rain
+from initialize_mysql_rain import location_names
 
 ##########################
 
