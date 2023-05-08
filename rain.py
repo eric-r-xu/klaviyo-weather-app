@@ -19,6 +19,7 @@ from flask_limiter.util import get_remote_address
 import initialize_mysql_rain
 from flask_mysqldb import MySQL
 from local_settings import *
+import initialize_mysql_rain
 
 ##########################
 
@@ -66,7 +67,7 @@ mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["pass
 
 @app.route("/rain")
 def rain_home_html():
-    return render_template("rain_update.html")
+    return render_template("rain_update.html", location_names=location_names)
 
 
 @app.route("/rain", methods=(["POST"]))
