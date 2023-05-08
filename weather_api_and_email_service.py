@@ -68,7 +68,11 @@ def weather_api_service(cityIDset, dateFact, tomorrow, mysql_conn, city_dict):
     # truncate table tblFactCityWeather with current data and data older than 10 days
     query = """DELETE from klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE or dateFact<date_sub(CURRENT_DATE, interval 10 day) """
     runQuery(mysql_conn, query)
+    logging.info("finished truncate table step")
+    print("finished truncate table step")
     for _i, cityID in enumerate(cityIDset):
+        logging.info(f"cityID={cityID}")
+        print(f"cityID={cityID}")
         # current weather api call
         r = requests.get(
             "http://api.openweathermap.org/data/2.5/weather?id=%s&appid=%s"
@@ -79,7 +83,7 @@ def weather_api_service(cityIDset, dateFact, tomorrow, mysql_conn, city_dict):
             [obj["weather"][0]["main"], obj["weather"][0]["description"]]
         )
         today_max_degrees_F = K_to_F(obj["main"]["temp_max"])
-        time.sleep(1.5)  # reduce cadence of api calls
+        time.sleep(0.8)  # reduce cadence of api calls
         # forecast weather api call
         r = requests.get(
             "http://api.openweathermap.org/data/2.5/forecast?id=%s&appid=%s"
@@ -93,7 +97,7 @@ def weather_api_service(cityIDset, dateFact, tomorrow, mysql_conn, city_dict):
         )
         query = (
             "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, \
-		tomorrow_max_degrees_F) VALUES (%i, '%s', '%s', %i, %i)"
+        tomorrow_max_degrees_F) VALUES (%i, '%s', '%s', %i, %i)"
             % (
                 cityID,
                 dateFact,
@@ -114,30 +118,22 @@ def weather_api_service(cityIDset, dateFact, tomorrow, mysql_conn, city_dict):
                 tomorrow_max_degrees_F,
             )
         )
-        if _i % 20 == 5:
-            gc.collect()
+    print("finished weather api service")
     return logging.info("finished weather api service")
 
 
 def weather_email_service(email_service, app, mysql_conn, city_dict):
-    # truncate table tblDimEmailCity with subscriptions older than 10 days
     truncate_query = """DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub(CURRENT_DATE, interval 10 day)  """
     runQuery(mysql_conn, truncate_query)
-
-    # tblDimEmailCity --> pandas dataframe & constrain city ids to consider by data in tblDimEmailCity
+    logging.info("finished truncate table step")
+    print("finished truncate table step")
     tblDimEmailCity = pd.read_sql_query(
-        "SELECT email, city_id FROM klaviyo.tblDimEmailCity", con=mysql_conn
+        """SELECT email, city_id FROM klaviyo.tblDimEmailCity""", con=mysql_conn
     )
     city_id_set = set(tblDimEmailCity["city_id"])
-
     city_id_string = str(city_id_set).replace("{", "").replace("}", "")
-
-    # create tblFactCityWeather_dict for today's weather api data constrained to city_id_set
     tfcw_df = pd.read_sql_query(
-        """
-    SELECT city_id, today_weather, today_max_degrees_F, tomorrow_max_degrees_F FROM klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE and city_id in (%s) 
-    """
-        % (city_id_string),
+        f"""SELECT city_id, today_weather, today_max_degrees_F, tomorrow_max_degrees_F FROM klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE and city_id in ({city_id_string}) """,
         con=mysql_conn,
     )
     tblFactCityWeather_dict = dict()
@@ -148,12 +144,13 @@ def weather_email_service(email_service, app, mysql_conn, city_dict):
         tfcw_df["tomorrow_max_degrees_F"],
     )
     for city_id, today_weather, today_F, tomorrow_F in zipped_array:
+        logging.info(f"city_id={city_id}")
+        print("city_id={city_id}")
         tblFactCityWeather_dict[city_id] = [
             str(today_weather).lower(),
             int(today_F),
             int(tomorrow_F),
         ]
-
     for city_id in city_id_set:
         gc.collect()
         # find set of recipients per city id
@@ -164,33 +161,38 @@ def weather_email_service(email_service, app, mysql_conn, city_dict):
         today_weather = tblFactCityWeather_dict[city_id][0]
         today_F = tblFactCityWeather_dict[city_id][1]
         tomorrow_F = tblFactCityWeather_dict[city_id][2]
-
         # subject_value + gif_link logic
         precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
         sunny_words = ["sunny", "clear"]
         if any(x in today_weather for x in sunny_words):
             logging.info("sunny")
+            print("sunny")
             subject_value = "It's nice out! Enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
         elif today_F >= tomorrow_F + 5:
             logging.info("warm")
+            print("warm")
             subject_value = "It's nice out! Enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
         elif any(x in today_weather for x in precipitation_words):
             logging.info("precipitation")
+            print("precipitation")
             subject_value = "Not so nice out? That's okay, enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/1hM7Uh46ixnsWRMA7w/giphy.gif"
         elif today_F + 5 <= tomorrow_F:
             logging.info("cold")
+            print("cold")
             subject_value = "Not so nice out? That's okay, enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/26FLdaDQ5f72FPbEI/giphy.gif"
         else:
             logging.info("other")
+            print("other")
             subject_value = "Enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
-
         with app.app_context():
             with email_service.connect() as conn:
+                logging.info(f"recipients = {recipients}")
+                print(f"recipients = {recipients}")
                 for recipient in recipients:
                     msg = Message(
                         subject_value,
@@ -198,16 +200,19 @@ def weather_email_service(email_service, app, mysql_conn, city_dict):
                         sender="eric.r.xu@gmail.com",
                     )
                     msg.html = """ %s - %s degrees F - %s <br><br><img src="%s" \
-					width="640" height="480"> """ % (
+                    width="640" height="480"> """ % (
                         city_dict[str(city_id)],
                         today_F,
                         today_weather,
                         gif_link,
                     )
+                    logging.info(f"recipient = {recipient}")
                     try:
                         conn.send(msg)
                     except:
-                        logging.error("failed to send to %s" % recipient)
+                        logging.error(f"failed to send to {recipient}")
+                        print(f"failed to send to {recipient}")
+    print("finished weather email service")
     return logging.info("finished weather email service")
 
 
