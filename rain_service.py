@@ -72,21 +72,23 @@ def rain_home_html():
 
 @app.route("/rain", methods=(["POST"]))
 def rain_gen_html_table():
+    i_location_name = str(request.form["i_location_name"])
     df = pd.read_sql_query(
-        """
+        f"""
         SELECT  
-            "All" AS "Level",
             location_name AS "Location Name",
             CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS "Last Updated Time (PST)",
-            CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific') AS "Last Checked Time (PST)",
-            rain_1h AS "mm Rain Last Hour",
-            rain_3h AS "mm Rain Last 3 Hours"
+            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS "Last Checked Time (PST)",
+            MAX(rain_1h) AS "mm Rain Last Hour",
+            MAX(rain_3h) AS "mm Rain Last 3 Hours"
         FROM 
             rain.tblFactLatLon 
+        WHERE 
+            location_name = "{i_location_name}" 
+        GROUP BY 
+            1, 2
         ORDER BY 
-            2 ASC, 
-            3 DESC,
-            4 DESC
+            2 DESC
         """,
         mysql_conn,
     )
