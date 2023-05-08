@@ -116,7 +116,6 @@ def weather_api_service(cityIDset, dateFact, tomorrow, mysql_conn, city_dict):
             gc.collect()
     return logging.info("finished weather api service")
 
-
 def weather_email_service(email_service, app, mysql_conn, city_dict):
     # truncate table tblDimEmailCity with subscriptions older than 10 days
     truncate_query = """DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub(CURRENT_DATE, interval 10 day)  """
