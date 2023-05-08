@@ -8,6 +8,14 @@ import logging
 
 load_initial_data = False
 
+lat_lon_dict = {
+    "Bedwell Bayfront Park": {"lat": 37.493, "lon": -122.173},
+    "Urbana, Illinois": {"lat": 40.113, "lon": -88.211},
+    "Lake Quannapowitt": {"lat":42.514, "lon": -88.211, "lon": -71.078},
+}
+
+location_names = [lat_lon_dict.keys()]
+
 # connect to sql
 def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
