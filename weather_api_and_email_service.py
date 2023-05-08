@@ -122,20 +122,15 @@ def weather_email_service(email_service, app, mysql_conn, city_dict):
     runQuery(mysql_conn, truncate_query)
 
     # tblDimEmailCity --> pandas dataframe & constrain city ids to consider by data in tblDimEmailCity
-    tblDimEmailCity = pd.read_sql_query(
-        "SELECT email, city_id FROM klaviyo.tblDimEmailCity", con=mysql_conn
-    )
+    tblDimEmailCity = pd.read_sql_query("SELECT email, city_id FROM klaviyo.tblDimEmailCity", con=mysql_conn)
     city_id_set = set(tblDimEmailCity["city_id"])
 
     city_id_string = str(city_id_set).replace("{", "").replace("}", "")
 
     # create tblFactCityWeather_dict for today's weather api data constrained to city_id_set
-    tfcw_df = pd.read_sql_query(
-        "SELECT city_id, today_weather, today_max_degrees_F, tomorrow_max_degrees_F \
-		FROM klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE and city_id in (%s)"
-        % (city_id_string),
-        con=mysql_conn,
-    )
+    tfcw_df = pd.read_sql_query("""
+    SELECT city_id, today_weather, today_max_degrees_F, tomorrow_max_degrees_F FROM klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE and city_id in (%s) 
+    """ % (city_id_string), con=mysql_conn)
     tblFactCityWeather_dict = dict()
     zipped_array = zip(
         tfcw_df["city_id"],
