@@ -10,7 +10,7 @@ import gc
 import pymysql
 import pytz
 import warnings
-# run python initialize_mysql_rain first
+import initialize_mysql_rain
 
 app = Flask(__name__)
 app.config.update(
@@ -49,11 +49,6 @@ def getSQLConn(host, user, password):
 
 
 mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
-
-lat_lon_dict = {
-    "Bedwell Bayfront Park": {"lat": 37.493, "lon": -122.173},
-    "Urbana, Illinois": {"lat": 40.113, "lon": -88.211},
-}
 
 
 # run query
