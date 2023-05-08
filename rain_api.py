@@ -11,6 +11,7 @@ import pymysql
 import pytz
 import warnings
 import initialize_mysql_rain
+from initialize_mysql_rain import lat_lon_dict
 
 app = Flask(__name__)
 app.config.update(
