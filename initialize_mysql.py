@@ -13,9 +13,9 @@ def getSQLConn(host, user, password):
 createSchema = "CREATE SCHEMA IF NOT EXISTS klaviyo;"
 
 createTblDimEmailCity = """CREATE TABLE IF NOT EXISTS klaviyo.tblDimEmailCity 
-( `email` VARCHAR(255) NOT NULL DEFAULT '0',
-`city_id` INT(10) unsigned NOT NULL DEFAULT '0',
-`sign_up_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+( `email` VARCHAR(255) NOT NULL DEFAULT '0' COMMENT 'subscription email',
+`city_id` INT(10) unsigned NOT NULL DEFAULT '0' COMMENT 'city id from api.openweathermap.org',
+`sign_up_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'signup UTC datetime',
 PRIMARY KEY (`email`, `city_id`),
 KEY `idxEmail` (`email`),
 KEY `idxCityID` (`city_id`)) 
