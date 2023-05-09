@@ -27,6 +27,7 @@ GMAIL_AUTH = {
 # Most populated cities in US and then some
 city_dict = {
     "5128594": "New York, New York",
+    "4948462": "Reading, MA",
     "3882428": "Los Angeles, California",
     "4887398": "Chicago, Illinois",
     "2646507": "Houston, Texas",
