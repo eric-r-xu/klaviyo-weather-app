@@ -82,15 +82,7 @@ def rain_gen_html_table():
     )
     df = pd.read_sql_query(
         f"""
-        SELECT 
-            location_name,
-            lat,
-            lon,
-            last_updated_time,
-            last_requested_time,
-            rain_3h,
-            rain_1h 
-        FROM 
+        WITH last_times AS 
         (SELECT  
             MAX(CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific')) AS last_updated_time,
             MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS last_requested_time  
@@ -99,10 +91,10 @@ def rain_gen_html_table():
         WHERE 
             location_name = "{i_location_name}" 
             AND lat = {i_location_lat} 
-            AND lon = {i_location_lon})last_times 
-        CROSS JOIN 
+            AND lon = {i_location_lon}),
+        rain_rows AS 
         (SELECT  
-            location_name AS "Location Name",
+            location_name AS location_name,
             {i_location_lat} AS lat,
             {i_location_lon} AS lon,
             CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS updated_time,
@@ -117,7 +109,19 @@ def rain_gen_html_table():
             AND lon = {i_location_lon} 
             AND (rain_1h > 0 OR rain_3h > 0)
         GROUP BY 
-            4)rain_rows
+            4)
+        SELECT 
+            location_name,
+            lat,
+            lon,
+            last_updated_time,
+            last_requested_time,
+            updated_time,
+            requested_time,
+            rain_1h,
+            rain_3h 
+        FROM 
+            rain_rows,last_times
         """,
         mysql_conn,
     )
