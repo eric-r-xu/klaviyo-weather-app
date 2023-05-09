@@ -121,7 +121,10 @@ def rain_gen_html_table():
             rain_1h,
             rain_3h 
         FROM 
-            rain_rows,last_times
+            rain_rows,last_times 
+        ORDER BY 
+            updated_time DESC,
+            requested_time DESC
         """,
         mysql_conn,
     )
