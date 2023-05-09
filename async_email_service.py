@@ -221,7 +221,7 @@ async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, ci
                         )
                     async_email_tasks.append(email_task)
         await asyncio.gather(*async_email_tasks)   
-    async logging.info("finished email service")
+    logging.info("finished email service")
 
 
 
