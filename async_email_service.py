@@ -62,7 +62,7 @@ mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["pass
 
 
 # run query
-asyc def runQuery(mysql_conn, query):
+async def runQuery(mysql_conn, query):
     with mysql_conn.cursor() as cursor:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
