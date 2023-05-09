@@ -51,6 +51,7 @@ app.config["MYSQL_DB"] = "rain"
 
 mysql = MySQL(app)
 
+
 # connect to sql
 def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
@@ -66,6 +67,7 @@ def runQuery(mysql_conn, query):
 
 mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
+
 @app.route("/rain")
 def rain_home_html():
     return render_template("rain_service.html", location_names=location_names)
@@ -74,7 +76,10 @@ def rain_home_html():
 @app.route("/rain", methods=(["POST"]))
 def rain_gen_html_table():
     i_location_name = str(request.form["i_location_name"])
-    i_location_lat,i_location_lon = lat_lon_dict['i_location_name']['lat'], lat_lon_dict['i_location_name']['lon']
+    i_location_lat, i_location_lon = (
+        lat_lon_dict[i_location_name]["lat"],
+        lat_lon_dict[i_location_name]["lon"],
+    )
     df = pd.read_sql_query(
         f"""
         SELECT 
@@ -117,7 +122,9 @@ def rain_gen_html_table():
         mysql_conn,
     )
     return render_template(
-        "rain_service_result.html", tables=[df.to_html(classes="data")], titles=df.columns.values
+        "rain_service_result.html",
+        tables=[df.to_html(classes="data")],
+        titles=df.columns.values,
     )
 
 
