@@ -114,8 +114,8 @@ def rain_gen_html_table():
         GROUP BY 
             4
         ORDER BY 
-            updated_time DESC,
-            requested_time DESC
+            4 DESC,
+            5 DESC
         """,
         mysql_conn,
     )
