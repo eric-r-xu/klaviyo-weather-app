@@ -9,7 +9,6 @@ import time
 import dateutil.parser
 import flask
 import datetime
-import numpy as np
 from functools import wraps
 from flask import Flask, request, Response, render_template
 import numpy as np
@@ -122,7 +121,7 @@ def rain_gen_html_table():
     return render_template(
         "rain_service_result.html",
         tables=[df_pre.to_html(classes="data"), df.to_html(classes="data")],
-        titles=df_pre.columns.values + df.columns.values,
+        titles=np.concatenate([df_pre.columns.values, df.columns.values]),
     )
 
 
