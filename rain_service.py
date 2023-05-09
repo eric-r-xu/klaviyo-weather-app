@@ -98,8 +98,8 @@ def rain_gen_html_table():
             {i_location_lat} AS lat,
             {i_location_lon} AS lon,
             CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS updated_time,
-            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS requested_time
-            MAX(rain_1h) AS rain_1h
+            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS requested_time,
+            MAX(rain_1h) AS rain_1h,
             MAX(rain_3h) AS rain_3h
         FROM 
             rain.tblFactLatLon 
