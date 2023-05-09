@@ -106,17 +106,8 @@ def weather_api_service(cityIDset, dateFact, tomorrow, mysql_conn, city_dict):
             )
         )
         runQuery(mysql_conn, query)
-        logging.info(
-            "%s - %s - %s - %s - %s - %s"
-            % (
-                cityID,
-                dateFact,
-                today_weather,
-                today_max_degrees_F,
-                tomorrow_max_degrees_F,
-            )
-        )
-    print("finished weather api service")
+        logging.info(f"{cityID} - {dateFact} - {today_weather} - {today_max_degrees_F} - {tomorrow_max_degrees_F}")
+ 
     return logging.info("finished weather api service")
 
 
