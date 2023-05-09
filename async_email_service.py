@@ -13,7 +13,7 @@ import gc
 import pymysql
 import warnings
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
 app.config.update(
@@ -31,13 +31,10 @@ app.config.update(
 email_service = Mail(app)
 
 # async send email function with delay_seconds
-async def send_email_with_delay(msg, delay_seconds):
+async def send_email_with_delay(msg, delay_seconds, app, conn):
     # Wait for the specified delay
     await asyncio.sleep(delay_seconds)
-    with smtplib.SMTP("smtp.gmail.com", 587) as smtp:
-        smtp.starttls()
-        smtp.login(GMAIL_AUTH["mail_username"], GMAIL_AUTH["mail_password"])
-        smtp.send_message(msg)
+    conn.send(msg)
 
 
 def timetz(*args):
@@ -68,7 +65,7 @@ mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["pass
 def runQuery(mysql_conn, query):
     with mysql_conn.cursor() as cursor:
         with warnings.catch_warnings():
-            warnings.filterwarnings('ignore')
+            warnings.filterwarnings("ignore")
             cursor.execute(query)
 
 
@@ -76,9 +73,9 @@ def async_weather_email_service(email_service, app, mysql_conn, city_dict):
     tblDimEmailCity = pd.read_sql_query(
         """SELECT email, city_id FROM klaviyo.tblDimEmailCity""", con=mysql_conn
     )
-    
+
     city_id_set = set(tblDimEmailCity["city_id"])
-    logging.info(f'city_id_set = {city_id_set')
+    logging.info(f"city_id_set = {city_id_set}")
     city_id_string = str(city_id_set).replace("{", "").replace("}", "")
     tfcw_df = pd.read_sql_query(
         f"""SELECT city_id, today_weather, today_max_degrees_F, tomorrow_max_degrees_F FROM klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE and city_id in ({city_id_string}) """,
@@ -100,12 +97,12 @@ def async_weather_email_service(email_service, app, mysql_conn, city_dict):
         ]
     for city_id in city_id_set:
         gc.collect()
-        
-        if int(city_id) IN (5392171, 4930956):
+
+        if int(city_id) in [5392171, 4930956]:
             delay_seconds = 10800
         else:
             delay_seconds = 0
-      
+
         # find set of recipients per city id
         _tblDimEmailCity = tblDimEmailCity[tblDimEmailCity["city_id"] == city_id]
         _tblDimEmailCity = _tblDimEmailCity.reset_index(drop=True)
@@ -155,13 +152,20 @@ def async_weather_email_service(email_service, app, mysql_conn, city_dict):
                     )
                     logging.info(f"recipient = {recipient}")
                     try:
-                        asyncio.run(send_email_with_delay(
-                            msg=msg,
-                            delay_seconds=delay_seconds,
-                        ))
+                        asyncio.run(
+                            send_email_with_delay(
+                                msg=msg,
+                                delay_seconds=delay_seconds,
+                                app=app,
+                                conn=conn,
+                            )
+                        )
                     except:
-                        logging.error(f"failed to send to {recipient} with delay of {delay_seconds} seconds ")
+                        logging.error(
+                            f"""failed to send to {recipient} with delay of {delay_seconds} seconds """
+                        )
     return logging.info("finished async weather email service")
+
 
 # async weather email service
 async_weather_email_service(email_service, app, mysql_conn, city_dict)
