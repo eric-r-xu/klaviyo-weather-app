@@ -15,11 +15,11 @@ Email web subscription service that makes weather based marketing emails for the
 `sh prepare_env.sh`
 
 5. run subscription service flask app and log output to /logs/klaviyo-weather-app.subscription_service.log including standard error <br><br>
-`nohup /$(whoami)/klaviyo-weather-app/env/bin/python ~/klaviyo-weather-app/subscription_service.py >> /logs/subscription_service.log 2>&1 &`
+`nohup /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/subscription_service.py >> /logs/subscription_service.log 2>&1 &`
 
-6. schedule 9 am daily weather api & email service and log to /logs/klaviyo-weather-app.weather_api_and_email_service.log folder including standard output. <br> 
-for example use `crontab -e`, specify nano editor, and use cron expression below to run at 9 am every morning (save with ctrl+o and exit with ctrl+x) <br><br>
-`0 9 * * * /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py >> /logs/weather_api_and_email_service.log 2>&1`
+6. schedule 855 am daily weather api & email service to get latest weather for all cities and send weather dependent emails. <br> 
+for example use `crontab -e`, specify nano editor, and use cron expression below to run at 8:55 am PST every morning (save with ctrl+o and exit with ctrl+x) <br><br>
+`55 15 * * * /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py 2>&1`
 
 DONE!
 
