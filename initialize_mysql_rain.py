@@ -9,9 +9,11 @@ import logging
 load_initial_data = False
 
 lat_lon_dict = {
+    "Hilo, Hawaii": {"lat": 19.724, "lon": -155.087},
     "Bedwell Bayfront Park": {"lat": 37.493, "lon": -122.173},
     "Urbana, Illinois": {"lat": 40.113, "lon": -88.211},
-    "Lake Quannapowitt": {"lat":42.514, "lon": -88.211, "lon": -71.078},
+    "Lake Quannapowitt": {"lat": 42.514, "lon": -71.078},
+    "Death Valley, CA": {"lat": 36.505, "lon": -117.079},
 }
 
 location_names = [x for x in lat_lon_dict.keys()]
