@@ -37,7 +37,7 @@ async def send_email_with_delay(msg, delay_seconds, app, conn):
     conn.send(msg)
 
 
-def timetz(*args):
+async def timetz(*args):
     return datetime.datetime.now(tz).timetuple()
 
 
@@ -54,7 +54,7 @@ logging.basicConfig(
 
 
 # connect to sql
-def getSQLConn(host, user, password):
+async def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
 
 
@@ -62,14 +62,69 @@ mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["pass
 
 
 # run query
-def runQuery(mysql_conn, query):
+asyc def runQuery(mysql_conn, query):
     with mysql_conn.cursor() as cursor:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
             cursor.execute(query)
 
 
-def async_weather_email_service(email_service, app, mysql_conn, city_dict):
+
+# today's date
+dateFact = datetime.datetime.now().strftime("%Y-%m-%d")
+logging.info(f'dateFact={dateFact}')
+# tomorrow's date
+tomorrow = str((datetime.datetime.now() + datetime.timedelta(1)).strftime("%Y-%m-%d"))
+logging.info(f'tomorrow={tomorrow}')
+            
+            
+            
+async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, city_dict):
+    async_email_tasks = []
+    
+    # truncate table tblFactCityWeather with current data and data older than 10 days
+    query = """DELETE from klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE or dateFact<date_sub(CURRENT_DATE, interval 10 day) """
+    runQuery(mysql_conn, query)
+    logging.info("finished truncate table step")
+    for _i, cityID in enumerate(cityIDset):
+        logging.info(f"cityID={cityID}")
+        # current weather api call
+        r = requests.get(
+            "http://api.openweathermap.org/data/2.5/weather?id=%s&appid=%s"
+            % (cityID, OPENWEATHERMAP_AUTH["api_key"])
+        )
+        obj = r.json()
+        today_weather = "-".join(
+            [obj["weather"][0]["main"], obj["weather"][0]["description"]]
+        )
+        today_max_degrees_F = K_to_F(obj["main"]["temp_max"])
+        time.sleep(0.8)  # reduce cadence of api calls
+        # forecast weather api call
+        r = requests.get(
+            "http://api.openweathermap.org/data/2.5/forecast?id=%s&appid=%s"
+            % (cityID, OPENWEATHERMAP_AUTH["api_key"])
+        )
+        obj = r.json()
+        tmrw_objs = [x for x in obj["list"] if x["dt_txt"][0:10] == tomorrow]
+        tomorrow_max_degrees_F = K_to_F(
+            max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs])
+        )
+        query = (
+            "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, \
+        tomorrow_max_degrees_F) VALUES (%i, '%s', '%s', %i, %i)"
+            % (
+                cityID,
+                dateFact,
+                today_weather,
+                today_max_degrees_F,
+                tomorrow_max_degrees_F,
+            )
+        )
+        runQuery(mysql_conn, query)
+        logging.info(f"{cityID} - {dateFact} - {today_weather} - {today_max_degrees_F} - {tomorrow_max_degrees_F}")
+ 
+    logging.info("finished weather api service for all cities")
+    
     tblDimEmailCity = pd.read_sql_query(
         """SELECT email, city_id FROM klaviyo.tblDimEmailCity""", con=mysql_conn
     )
@@ -97,7 +152,7 @@ def async_weather_email_service(email_service, app, mysql_conn, city_dict):
         ]
     for city_id in city_id_set:
         gc.collect()
-
+        # NYC, Boston, Reading, use 3 hour delay
         if int(city_id) in [5392171, 4930956, 4948462]:
             delay_seconds = 10800
         else:
@@ -152,7 +207,7 @@ def async_weather_email_service(email_service, app, mysql_conn, city_dict):
                     )
                     logging.info(f"recipient = {recipient}")
                     try:
-                        asyncio.run(
+                        email_task = asyncio.create_task(
                             send_email_with_delay(
                                 msg=msg,
                                 delay_seconds=delay_seconds,
@@ -162,10 +217,14 @@ def async_weather_email_service(email_service, app, mysql_conn, city_dict):
                         )
                     except:
                         logging.error(
-                            f"""failed to send to {recipient} with delay of {delay_seconds} seconds """
+                            f"""failed to schedule email to {recipient} with delay of {delay_seconds} seconds """
                         )
-    return logging.info("finished async weather email service")
+                    async_email_tasks.append(email_task)
+        await asyncio.gather(*async_email_tasks)   
+    async logging.info("finished email service")
 
 
-# async weather email service
-async_weather_email_service(email_service, app, mysql_conn, city_dict)
+
+
+
+asyncio.run(main())
