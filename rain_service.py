@@ -20,7 +20,7 @@ import initialize_mysql_rain
 from flask_mysqldb import MySQL
 from local_settings import *
 import initialize_mysql_rain
-from initialize_mysql_rain import location_names
+from initialize_mysql_rain import location_names, lat_lon_dict
 
 ##########################
 
@@ -74,7 +74,7 @@ def rain_home_html():
 @app.route("/rain", methods=(["POST"]))
 def rain_gen_html_table():
     i_location_name = str(request.form["i_location_name"])
-    i_location_lat,i_location_lon = location_names['i_location_name']['lat'], location_names['i_location_name']['lon']
+    i_location_lat,i_location_lon = lat_lon_dict['i_location_name']['lat'], lat_lon_dict['i_location_name']['lon']
     df = pd.read_sql_query(
         f"""
         SELECT 
