@@ -80,12 +80,12 @@ def rain_gen_html_table():
         lat_lon_dict[i_location_name]["lat"],
         lat_lon_dict[i_location_name]["lon"],
     )
-    df = pd.read_sql_query(
+    df_pre = pd.read_sql_query(
         f"""
         WITH last_times AS 
         (SELECT  
-            MAX(CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific')) AS last_updated_time,
-            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS last_requested_time  
+            MAX(SUBSTR(CAST(CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS VARCHAR),1,13)) AS "Last API Update Hour (PST)",
+            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS "Last API Request Time (PST)"
         FROM 
             rain.tblFactLatLon 
         WHERE 
@@ -93,14 +93,19 @@ def rain_gen_html_table():
             AND lat = {i_location_lat} 
             AND lon = {i_location_lon}),
         rain_rows AS 
-        (SELECT  
-            location_name AS location_name,
-            {i_location_lat} AS lat,
-            {i_location_lon} AS lon,
-            CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS updated_time,
-            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS requested_time,
-            MAX(rain_1h) AS rain_1h,
-            MAX(rain_3h) AS rain_3h
+        """,
+        mysql_conn,
+    )
+    df = pd.read_sql_query(
+        f"""
+        SELECT  
+            location_name AS "Location Name",
+            {i_location_lat} AS "Latitude",
+            {i_location_lon} AS "Longitude",
+            SUBSTR(CAST(CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS VARCHAR),1,13) AS "API Update Hour (PST)",
+            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS "API Request Time (PST)",
+            MAX(rain_1h) AS "Rainfall (mm) Last 1 hour",
+            MAX(rain_3h) AS "Rainfall (mm) Last 3 hours"
         FROM 
             rain.tblFactLatLon 
         WHERE 
@@ -109,19 +114,7 @@ def rain_gen_html_table():
             AND lon = {i_location_lon} 
             AND (rain_1h > 0 OR rain_3h > 0)
         GROUP BY 
-            4)
-        SELECT 
-            location_name,
-            lat,
-            lon,
-            last_updated_time,
-            last_requested_time,
-            updated_time,
-            requested_time,
-            rain_1h,
-            rain_3h 
-        FROM 
-            rain_rows,last_times 
+            4
         ORDER BY 
             updated_time DESC,
             requested_time DESC
@@ -130,8 +123,8 @@ def rain_gen_html_table():
     )
     return render_template(
         "rain_service_result.html",
-        tables=[df.to_html(classes="data")],
-        titles=df.columns.values,
+        tables=[df_pre.to_html(classes="data"), df.to_html(classes="data")],
+        titles=df_pre.columns.values + df.columns.values,
     )
 
 
