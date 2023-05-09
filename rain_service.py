@@ -74,22 +74,45 @@ def rain_home_html():
 @app.route("/rain", methods=(["POST"]))
 def rain_gen_html_table():
     i_location_name = str(request.form["i_location_name"])
+    i_location_lat,i_location_lon = location_names['i_location_name']['lat'], location_names['i_location_name']['lon']
     df = pd.read_sql_query(
         f"""
-        SELECT  
-            location_name AS "Location Name",
-            CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS "Last Updated Time (PST)",
-            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS "Last Checked Time (PST)",
-            MAX(rain_1h) AS "mm Rain Last Hour",
-            MAX(rain_3h) AS "mm Rain Last 3 Hours"
+        SELECT 
+            location_name,
+            lat,
+            lon,
+            last_updated_time,
+            last_requested_time,
+            rain_3h,
+            rain_1h 
+        FROM 
+        (SELECT  
+            MAX(CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific')) AS last_updated_time,
+            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS last_requested_time  
         FROM 
             rain.tblFactLatLon 
         WHERE 
             location_name = "{i_location_name}" 
+            AND lat = {i_location_lat} 
+            AND lon = {i_location_lon})last_times 
+        CROSS JOIN 
+        (SELECT  
+            location_name AS "Location Name",
+            {i_location_lat} AS lat,
+            {i_location_lon} AS lon,
+            CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS updated_time,
+            MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS requested_time
+            MAX(rain_1h) AS rain_1h
+            MAX(rain_3h) AS rain_3h
+        FROM 
+            rain.tblFactLatLon 
+        WHERE 
+            location_name = "{i_location_name}" 
+            AND lat = {i_location_lat} 
+            AND lon = {i_location_lon} 
+            AND (rain_1h > 0 OR rain_3h > 0)
         GROUP BY 
-            1, 2
-        ORDER BY 
-            2 DESC
+            4)rain_rows
         """,
         mysql_conn,
     )
@@ -102,6 +125,4 @@ def rain_gen_html_table():
 
 # Start the app server on port 1080
 app.debug = True
-app.jinja_env.auto_reload = True
-app.config['TEMPLATES_AUTO_RELOAD'] = True
-app.run(host="0.0.0.0", port=1080, threaded=False, processes=3)
+app.run(host="0.0.0.0", port=1080, threaded=False)
