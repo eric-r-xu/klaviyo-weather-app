@@ -60,7 +60,7 @@ def klaviyo_weather_app_html():
 
 @app.route("/klaviyo_weather_app", methods=["POST"])
 def klaviyo_weather_app_post():
-    i_email = str(request.form["i_email"])
+    i_email = str(request.form["i_email"]).lower()
     is_valid = validate_email(
         email_address=i_email, check_format=True, check_blacklist=True
     )
