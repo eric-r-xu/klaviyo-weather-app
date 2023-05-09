@@ -46,7 +46,7 @@ tz = pytz.timezone("US/Pacific")
 logging.Formatter.converter = timetz
 
 logging.basicConfig(
-    filename="/logs/weather_api_and_email_service.log",
+    filename="/logs/async_email_service.log",
     format="%(asctime)s %(levelname)s: %(message)s",
     level=logging.INFO,
     datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
