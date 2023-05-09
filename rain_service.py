@@ -83,7 +83,7 @@ def rain_gen_html_table():
     df_pre = pd.read_sql_query(
         f"""
         SELECT  
-            MAX(SUBSTR(CAST(CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS VARCHAR),1,13)) AS "Last API Update Hour (PST)",
+            MAX(SUBSTR(CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific'),1,13)) AS "Last API Update Hour (PST)",
             MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS "Last API Request Time (PST)"
         FROM 
             rain.tblFactLatLon 
@@ -100,7 +100,7 @@ def rain_gen_html_table():
             location_name AS "Location Name",
             {i_location_lat} AS "Latitude",
             {i_location_lon} AS "Longitude",
-            SUBSTR(CAST(CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific') AS VARCHAR),1,13) AS "API Update Hour (PST)",
+            SUBSTR(CONVERT_TZ(FROM_UNIXTIME(dt),'UTC','US/Pacific'),1,13) AS "API Update Hour (PST)",
             MAX(CONVERT_TZ(FROM_UNIXTIME(requested_dt),'UTC','US/Pacific')) AS "API Request Time (PST)",
             MAX(rain_1h) AS "Rainfall (mm) Last 1 hour",
             MAX(rain_3h) AS "Rainfall (mm) Last 3 hours"
