@@ -14,6 +14,7 @@ import initialize_mysql_rain
 from initialize_mysql_rain import lat_lon_dict
 
 app = Flask(__name__)
+
 app.config.update(
     dict(
         DEBUG=True,
@@ -25,12 +26,11 @@ app.config.update(
         MAIL_PASSWORD=GMAIL_AUTH["mail_password"],
     )
 )
-email_service = Mail(app)
 
+email_service = Mail(app)
 
 def timetz(*args):
     return datetime.datetime.now(tz).timetuple()
-
 
 # logging datetime in PST
 tz = pytz.timezone("US/Pacific")
@@ -43,14 +43,11 @@ logging.basicConfig(
     datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
 )
 
-
 # connect to sql
 def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
 
-
 mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
-
 
 # run query
 def runQuery(mysql_conn, query):
@@ -58,7 +55,6 @@ def runQuery(mysql_conn, query):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             cursor.execute(query)
-
 
 def rain_api_service(mysql_conn, lat_lon_dict):
     api_key = OPENWEATHERMAP_AUTH["api_key"]
