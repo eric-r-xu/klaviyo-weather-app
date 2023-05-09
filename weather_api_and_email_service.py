@@ -11,6 +11,8 @@ import gc
 import pymysql
 import warnings
 
+warnings.filterwarnings('ignore')
+
 app = Flask(__name__)
 app.config.update(
     dict(
@@ -55,7 +57,7 @@ mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["pass
 def runQuery(mysql_conn, query):
     with mysql_conn.cursor() as cursor:
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
+            warnings.filterwarnings('ignore')
             cursor.execute(query)
 
 
@@ -69,10 +71,8 @@ def weather_api_service(cityIDset, dateFact, tomorrow, mysql_conn, city_dict):
     query = """DELETE from klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE or dateFact<date_sub(CURRENT_DATE, interval 10 day) """
     runQuery(mysql_conn, query)
     logging.info("finished truncate table step")
-    print("finished truncate table step")
     for _i, cityID in enumerate(cityIDset):
         logging.info(f"cityID={cityID}")
-        print(f"cityID={cityID}")
         # current weather api call
         r = requests.get(
             "http://api.openweathermap.org/data/2.5/weather?id=%s&appid=%s"
@@ -90,7 +90,6 @@ def weather_api_service(cityIDset, dateFact, tomorrow, mysql_conn, city_dict):
             % (cityID, OPENWEATHERMAP_AUTH["api_key"])
         )
         obj = r.json()
-        # ony get objects for tmrw
         tmrw_objs = [x for x in obj["list"] if x["dt_txt"][0:10] == tomorrow]
         tomorrow_max_degrees_F = K_to_F(
             max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs])
@@ -110,7 +109,6 @@ def weather_api_service(cityIDset, dateFact, tomorrow, mysql_conn, city_dict):
         logging.info(
             "%s - %s - %s - %s - %s - %s"
             % (
-                city_dict[str(cityID)],
                 cityID,
                 dateFact,
                 today_weather,
@@ -126,7 +124,6 @@ def weather_email_service(email_service, app, mysql_conn, city_dict):
     truncate_query = """DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub(CURRENT_DATE, interval 10 day)  """
     runQuery(mysql_conn, truncate_query)
     logging.info("finished truncate table step")
-    print("finished truncate table step")
     tblDimEmailCity = pd.read_sql_query(
         """SELECT email, city_id FROM klaviyo.tblDimEmailCity""", con=mysql_conn
     )
@@ -145,7 +142,6 @@ def weather_email_service(email_service, app, mysql_conn, city_dict):
     )
     for city_id, today_weather, today_F, tomorrow_F in zipped_array:
         logging.info(f"city_id={city_id}")
-        print("city_id={city_id}")
         tblFactCityWeather_dict[city_id] = [
             str(today_weather).lower(),
             int(today_F),
@@ -166,27 +162,22 @@ def weather_email_service(email_service, app, mysql_conn, city_dict):
         sunny_words = ["sunny", "clear"]
         if any(x in today_weather for x in sunny_words):
             logging.info("sunny")
-            print("sunny")
             subject_value = "It's nice out! Enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
         elif today_F >= tomorrow_F + 5:
-            logging.info("warm")
             print("warm")
             subject_value = "It's nice out! Enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
         elif any(x in today_weather for x in precipitation_words):
             logging.info("precipitation")
-            print("precipitation")
             subject_value = "Not so nice out? That's okay, enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/1hM7Uh46ixnsWRMA7w/giphy.gif"
         elif today_F + 5 <= tomorrow_F:
             logging.info("cold")
-            print("cold")
             subject_value = "Not so nice out? That's okay, enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/26FLdaDQ5f72FPbEI/giphy.gif"
         else:
             logging.info("other")
-            print("other")
             subject_value = "Enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
         with app.app_context():
@@ -211,8 +202,6 @@ def weather_email_service(email_service, app, mysql_conn, city_dict):
                         conn.send(msg)
                     except:
                         logging.error(f"failed to send to {recipient}")
-                        print(f"failed to send to {recipient}")
-    print("finished weather email service")
     return logging.info("finished weather email service")
 
 
