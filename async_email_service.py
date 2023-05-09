@@ -98,7 +98,7 @@ def async_weather_email_service(email_service, app, mysql_conn, city_dict):
     for city_id in city_id_set:
         gc.collect()
 
-        if int(city_id) in [5392171, 4930956]:
+        if int(city_id) in [5392171, 4930956, 4948462]:
             delay_seconds = 10800
         else:
             delay_seconds = 0
