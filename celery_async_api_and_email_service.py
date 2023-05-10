@@ -1,6 +1,6 @@
 from flask import Flask
 from celery import Celery
-from initial_mysql impot *
+from initial_mysql imporet *
 from time import sleep
 from flask_mail import Mail, Message
 import pandas as pd
@@ -26,59 +26,39 @@ app.config.update(
         MAIL_USE_SSL=False,
         MAIL_USERNAME=GMAIL_AUTH["mail_username"],
         MAIL_PASSWORD=GMAIL_AUTH["mail_password"],
+        WEATHER_API_KEY=OPENWEATHERMAP_AUTH["api_key"],
     )
 )
 
 email_service = Mail(app)
 
-
 @celery.task
-def send_async_email(email_data):
+def send_async_email(msg, delay_seconds, email_service, recipient):
     """Background task to send an email with Flask-Mail."""
-    msg = Message(
-        email_data['subject'],
-        sender=email_data['sender'],
-        recipients=[email_data['recipient']])
-    msg.body = email_data['body']
-    
     with app.app_context():
+        sleep(delay_seconds)
         with email_service.connect() as conn:
             logging.info(f"recipients = {recipients}")
             for recipient in recipients:
                 msg = Message(
                     subject_value,
                     recipients=[recipient],
-                    sender=GMAIL_AUTH["mail_username"],
-                )
-                msg.html = """ %s - %s degrees F - %s <br><br><img src="%s" \
-                width="640" height="480"> """ % (
-                    city_dict[str(city_id)],
-                    today_F,
-                    today_weather,
-                    gif_link,
+                    sender=app.config['MAIL_PASSWORD'],
                 )
                 logging.info(f"recipient = {recipient}")
                 try:
-                    send_email_with_delay(
-                        msg=msg,
-                        delay_seconds=delay_seconds,
-                        app=app,
-                        conn=conn,
-                    ) 
+                    conn.send(msg)
+                    logging.info(
+                        f"""succeeded sending email to {recipient} with delay of {delay_seconds} seconds """
+                    )
                 except:
                     logging.error(
                         f"""failed to send email to {recipient} with delay of {delay_seconds} seconds """
                     )
-    
-    
-    with app.app_context():
-        sleep(delay_seconds)  # Delay sending the email
-        mail.send(msg)
 
 
 def timetz(*args):
     return datetime.now(tz).timetuple()
-
 
 # log in PST
 tz = pytz.timezone("US/Pacific")
@@ -119,7 +99,6 @@ logging.info('dateFact=%s' % (dateFact))
 # tomorrow's date
 tomorrow = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
 logging.info('tomorrow=%s' % (tomorrow))
-async_email_tasks = []
 
 # truncate table tblFactCityWeather with current data and data older than 10 days
 query = """DELETE from klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE or dateFact<date_sub(CURRENT_DATE, interval 10 day) """
@@ -193,6 +172,7 @@ for city_id in city_id_set:
     # NYC, Boston, Reading, use 3 hour delay
     if int(city_id) in [5392171, 4930956, 4948462]:
         delay_seconds = 10800
+    # Central Time
     elif int(city_id) in [4683416, 4671240, 4719457, 4705349, 4726206, 4684888, 2646507, 4693003, 5525577, 4693003, 4700168]:
         delay_seconds = 7200
     else:
@@ -214,7 +194,7 @@ for city_id in city_id_set:
         subject_value = "It's nice out! Enjoy a discount on us."
         gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
     elif today_F >= tomorrow_F + 5:
-        print("warm")
+        logging.info("warm")
         subject_value = "It's nice out! Enjoy a discount on us."
         gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
     elif any(x in today_weather for x in precipitation_words):
@@ -245,20 +225,6 @@ for city_id in city_id_set:
                     today_weather,
                     gif_link,
                 )
-                logging.info(f"recipient = {recipient}")
-                try:
-                    email_task = asyncio.create_task(
-                        send_email_with_delay(
-                            msg=msg,
-                            delay_seconds=delay_seconds,
-                            app=app,
-                            conn=conn,
-                        )
-                    )
-                    async_email_tasks.append(email_task)
-                except:
-                    logging.error(
-                        f"""failed to schedule email to {recipient} with delay of {delay_seconds} seconds """
-                    )
+                send_async_email(msg, delay_seconds, email_service, recipient)
 
-logging.info("finished email service")
+logging.info("finished celery_async_api_and_email_service")
