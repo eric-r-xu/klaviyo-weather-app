@@ -35,11 +35,11 @@ Run flask web application in background (logs in /logs/subscription_service.log 
     nohup /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/subscription_service.py 2>&1 &
     
 **WEATHER API SERVICE** and **WEATHER EMAIL SERVICE**<br>
-Schedule cron for scripted api call for 8:55 am EST (5 minute buffer) to get latest weather data and send async emails depending on time zone (limited support) 
+Schedule cron for 8:55 am EST (5 minute buffer) to get weather data and forecasts and send async emails depending on time zone (limited support) 
 
     export VISUAL=nano;crontab -e
     
-    add following row entry to schedule runs every 30 minutes (logs in /logs/api_and_async_email.log including standard error)
+    (logs in /logs/api_and_async_email.log including standard error)
     
     55 12 * * * /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/api_and_async_email.py 2>&1
 
