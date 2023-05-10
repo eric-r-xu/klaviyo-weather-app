@@ -108,7 +108,8 @@ query = """DELETE from klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE or
 runQuery(mysql_conn, query)
 logging.info("finished truncate table step")
 for _i, cityID in enumerate(cityIDset):
-    logging.info(f"cityID={cityID}")
+    city_name = city_dict['{cityID}']
+    logging.info(f"cityID={cityID}, city_name={city_name}")
     # current weather api call
     r = requests.get(
         "http://api.openweathermap.org/data/2.5/weather?id=%s&appid=%s"
@@ -174,13 +175,15 @@ for city_id in city_id_set:
     gc.collect()
     # Eastern Time
     if int(city_id) in [5392171, 4930956, 4948462]:
-        delay_seconds = 10800
+        delay_seconds = 0
     # Central Time
     elif int(city_id) in [4683416, 4671240, 4719457, 4705349, 4726206, 4684888, 2646507, 4693003, 5525577, 4693003, 4700168]:
         delay_seconds = 3600
     # Pacific Time
     else:
-        delay_seconds = 0
+        delay_seconds = 10800
+    
+    logging.info(f'delay_seconds = {delay_seconds}')
 
     # find set of recipients per city id
     _tblDimEmailCity = tblDimEmailCity[tblDimEmailCity["city_id"] == city_id]
