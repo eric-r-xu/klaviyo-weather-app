@@ -75,10 +75,10 @@ def runQuery(mysql_conn, query):
 
 # today's date
 dateFact = datetime.now().strftime("%Y-%m-%d")
-logging.info(f'dateFact={dateFact}')
+logging.info('dateFact=%s' % (dateFact))
 # tomorrow's date
 tomorrow = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
-logging.info(f'tomorrow={tomorrow}')
+logging.info('tomorrow=%s' % (tomorrow))
             
             
             
