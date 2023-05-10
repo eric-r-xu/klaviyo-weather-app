@@ -48,7 +48,7 @@ logging.basicConfig(
     filename="/logs/async_email_service.log",
     format="%(asctime)s %(levelname)s: %(message)s",
     level=logging.INFO,
-    datefmt=f"%Y-%m-%d %H:%M:%S",
+    datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
 )
 
 
@@ -69,20 +69,16 @@ def runQuery(mysql_conn, query):
     with mysql_conn.cursor() as cursor:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
-            cursor.execute(query)
-
-
-
-# today's date
-dateFact = datetime.now().strftime("%Y-%m-%d")
-logging.info('dateFact=%s' % (dateFact))
-# tomorrow's date
-tomorrow = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
-logging.info('tomorrow=%s' % (tomorrow))
+            cursor.execute(query)            
             
             
-            
-async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, city_dict):
+async def main(cityIDset, email_service, app, mysql_conn, city_dict):
+    # today's date
+    dateFact = datetime.now().strftime("%Y-%m-%d")
+    logging.info('dateFact=%s' % (dateFact))
+    # tomorrow's date
+    tomorrow = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
+    logging.info('tomorrow=%s' % (tomorrow))
     async_email_tasks = []
     
     # truncate table tblFactCityWeather with current data and data older than 10 days
@@ -232,4 +228,4 @@ async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, ci
 
 
 
-asyncio.run(main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, city_dict))
+asyncio.run(main(cityIDset, email_service, app, mysql_conn, city_dict))
