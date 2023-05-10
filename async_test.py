@@ -14,31 +14,47 @@ import gc
 import pymysql
 import warnings
 
+
+warnings.filterwarnings('ignore')
+
+app = Flask(__name__)
+app.config.update(
+    dict(
+        DEBUG=True,
+        MAIL_SERVER="smtp.gmail.com",
+        MAIL_PORT=587,
+        MAIL_USE_TLS=True,
+        MAIL_USE_SSL=False,
+        MAIL_USERNAME=GMAIL_AUTH["mail_username"],
+        MAIL_PASSWORD=GMAIL_AUTH["mail_password"],
+    )
+)
+
+email_service = Mail(app)
+
 async def send_async_email(city_name, msg, delay_seconds, email_service, recipient):
     logging.info('starting async email task for {recipient} for location {city_name}')
     logging.info(f'Entering timer of {delay_seconds} seconds')
     await asyncio.sleep(delay_seconds)
     logging.info(f'Exiting timer of {delay_seconds} seconds')
-    """Background task to send an email with Flask-Mail."""
-    with app.app_context():
-        with email_service.connect() as conn:
-            logging.info(f"recipients = {recipients}")
-            for recipient in recipients:
-                msg = Message(
-                    subject_value,
-                    recipients=[recipient],
-                    sender=app.config['MAIL_PASSWORD'],
+    with email_service.connect() as conn:
+        logging.info(f"recipients = {recipients}")
+        for recipient in recipients:
+            msg = Message(
+                subject_value,
+                recipients=[recipient],
+                sender=app.config['MAIL_PASSWORD'],
+            )
+            logging.info(f"recipient = {recipient}")
+            try:
+                conn.send(msg)
+                logging.info(
+                    f"""succeeded sending email to {recipient} with delay of {delay_seconds} seconds """
                 )
-                logging.info(f"recipient = {recipient}")
-                try:
-                    conn.send(msg)
-                    logging.info(
-                        f"""succeeded sending email to {recipient} with delay of {delay_seconds} seconds """
-                    )
-                except:
-                    logging.error(
-                        f"""failed to send email to {recipient} with delay of {delay_seconds} seconds """
-                    )
+            except:
+                logging.error(
+                    f"""failed to send email to {recipient} with delay of {delay_seconds} seconds """
+                )
                     
     logging.info('async email task for {recipient} for location {city_name} finished')       
 
