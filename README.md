@@ -3,7 +3,7 @@ Email web subscription service that makes weather based marketing emails for the
 ### [ranked US city population list](https://en.wikipedia.org/wiki/List_of_United_States_cities_by_population)
 
 ### web application deployment directions
-#### Deployed on Ubuntu 20.04 (LTS) x64 Digital Ocean droplet with git version 2.17.1, Python 3.10.6, & MySQL 5.7.41 
+#### Deployed on Ubuntu 22.04 (LTS) x64 Digital Ocean droplet with git version 2.17.1, Python 3.10.6, & MySQL 5.7.41 
 #### subscription app service hosted [here](http://ericrxu.com:1984/klaviyo_weather_app)
 1. ssh into host or use Digital Ocean terminal console
 
