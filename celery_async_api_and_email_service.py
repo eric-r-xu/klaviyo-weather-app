@@ -34,8 +34,8 @@ email_service = Mail(app)
 
 app.config.from_mapping(
     CELERY=dict(
-        broker_url='redis://localhost:6379/0',
-        result_backend='redis://localhost:6379/0',
+        broker_url='redis://localhost:6379',
+        result_backend='redis://localhost:6379',
         task_ignore_result=True,
     ),
 )
