@@ -37,7 +37,7 @@ async def send_email_with_delay(msg, delay_seconds, app, conn):
 
 
 async def timetz(*args):
-    return datetime.datetime.now(tz).timetuple()
+    return datetime.now(tz).timetuple()
 
 
 # log in PST
@@ -74,10 +74,10 @@ def runQuery(mysql_conn, query):
 
 
 # today's date
-dateFact = datetime.datetime.now().strftime("%Y-%m-%d")
+dateFact = datetime.now().strftime("%Y-%m-%d")
 logging.info(f'dateFact={dateFact}')
 # tomorrow's date
-tomorrow = str((datetime.datetime.now() + datetime.timedelta(1)).strftime("%Y-%m-%d"))
+tomorrow = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
 logging.info(f'tomorrow={tomorrow}')
             
             
