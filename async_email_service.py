@@ -48,7 +48,7 @@ logging.basicConfig(
     filename="/logs/async_email_service.log",
     format="%(asctime)s %(levelname)s: %(message)s",
     level=logging.INFO,
-    datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
+    datefmt=f"%Y-%m-%d %H:%M:%S",
 )
 
 
