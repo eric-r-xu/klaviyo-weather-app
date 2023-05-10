@@ -133,7 +133,7 @@ async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, ci
     )
 
     city_id_set = set(tblDimEmailCity["city_id"])
-    logging.info(f"city_id_set = {city_id_set}")
+    # logging.info(f"city_id_set = {city_id_set}")
     city_id_string = str(city_id_set).replace("{", "").replace("}", "")
     tfcw_df = pd.read_sql_query(
         f"""SELECT city_id, today_weather, today_max_degrees_F, tomorrow_max_degrees_F FROM klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE and city_id in ({city_id_string}) """,
