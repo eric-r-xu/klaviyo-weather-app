@@ -38,23 +38,16 @@ async def send_async_email(city_name, msg, delay_seconds, email_service, recipie
     await asyncio.sleep(delay_seconds)
     logging.info(f'Exiting timer of {delay_seconds} seconds')
     with email_service.connect() as conn:
-        logging.info(f"recipients = {recipients}")
-        for recipient in recipients:
-            msg = Message(
-                subject_value,
-                recipients=[recipient],
-                sender=app.config['MAIL_PASSWORD'],
+        logging.info(f"recipient = {recipient}")
+        try:
+            conn.send(msg)
+            logging.info(
+                f"""succeeded sending email to {recipient} with delay of {delay_seconds} seconds """
             )
-            logging.info(f"recipient = {recipient}")
-            try:
-                conn.send(msg)
-                logging.info(
-                    f"""succeeded sending email to {recipient} with delay of {delay_seconds} seconds """
-                )
-            except:
-                logging.error(
-                    f"""failed to send email to {recipient} with delay of {delay_seconds} seconds """
-                )
+        except:
+            logging.error(
+                f"""failed to send email to {recipient} with delay of {delay_seconds} seconds """
+            )
                     
     logging.info('async email task for {recipient} for location {city_name} finished')       
 
@@ -219,7 +212,6 @@ async def main():
             gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
         with app.app_context():
             with email_service.connect() as conn:
-                logging.info(f"recipients = {recipients}")
                 for recipient in recipients:
                     msg = Message(
                         subject_value,
@@ -236,10 +228,6 @@ async def main():
                     task = asyncio.create_task(send_async_email(city_name, msg, delay_seconds, email_service, recipient))
                     tasks.append(task)
 
-    
-
-
-    
 
     await asyncio.gather(*tasks)
 
