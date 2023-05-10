@@ -5,29 +5,44 @@ Email web subscription service that makes weather based marketing emails for the
 ### web application deployment directions
 #### Deployed on Ubuntu 22.04 (LTS) x64 Digital Ocean droplet with git version 2.17.1, Python 3.10.6, & MySQL 5.7.41 
 #### subscription app service hosted [here](http://ericrxu.com:1984/klaviyo_weather_app)
-1. ssh into host or use Digital Ocean terminal console
 
-2. install MySQL (follow instructions [here](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-20-04))
+- - - - 
 
-3. obtain relevant credentials and follow instructions in **local_settings_template.py** for authorization and to initialize city variables
+ssh into host or use Digital Ocean terminal console
 
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install git
-cd ~/
-git clone https://github.com/eric-r-xu/klaviyo-weather-app.git
 
-4. update necessary software, setup virtual environment, install git, and  clone this repo<br>
-`sh prepare_env.sh`
+Upgrade Ubuntu and packages
 
-5. run subscription service flask app and log output to /logs/klaviyo-weather-app.subscription_service.log including standard error <br><br>
-`nohup /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/subscription_service.py >> /logs/subscription_service.log 2>&1 &`
+    sudo apt-get update
+    sudo apt-get upgrade
 
-6. schedule 855 am daily weather api & email service to get latest weather for all cities and send weather dependent emails. <br> 
-for example use `crontab -e`, specify nano editor, and use cron expression below to run at 8:55 am PST every morning (save with ctrl+o and exit with ctrl+x) <br><br>
-`55 15 * * * /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/weather_api_and_email_service.py 2>&1`
+Install mySQL ([Ubuntu 22.04 instructions here](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-22-04))
 
-DONE!
+Install git, go to home directory, and clone this repo
+
+    sudo apt-get install git
+    cd ~/
+    git clone https://github.com/eric-r-xu/klaviyo-weather-app.git
+    
+Install latest python and all packages and activate virtual environment
+    
+    cd klaviyo-weather-app
+    sh prepare_env.sh
+
+Run flask web application in background (logs in /logs/subscription_service.log including standard error)
+
+    nohup /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/subscription_service.py 2>&1 &
+    
+Schedule cron for scripted api call for 8:55 am est (5 minute buffer to send emails for est folks, with async delays for other time zones) to get latest weather data and send async emails
+
+    export VISUAL=nano;crontab -e
+    
+    add following row entry to schedule runs every 30 minutes (logs in /logs/rain_api.log including standard error)
+    
+    55 12 * * * /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/async_test.py 2>&1
+
+
+
 
 -----------------------------------------------------------------------------------------------------------------------------
 
