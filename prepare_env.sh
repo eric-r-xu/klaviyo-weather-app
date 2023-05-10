@@ -15,3 +15,7 @@ sudo apt-get install libsasl2-dev libsasl2-2 libsasl2-modules-gssapi-mit
 sudo apt-get install libmysqlclient-dev
 pip install -r ~/klaviyo-weather-app/py3requirements.txt
 python -m pip install git+https://gitea.ksol.io/karolyi/py3-validate-email@v1.0.9
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+sudo apt-get update
+sudo apt-get install redis
