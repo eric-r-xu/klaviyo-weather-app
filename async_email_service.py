@@ -124,7 +124,6 @@ async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, ci
             )
         )
         runQuery(mysql_conn, query)
-        logging.info(f"{cityID} - {dateFact} - {today_weather} - {today_max_degrees_F} - {tomorrow_max_degrees_F}")
  
     logging.info("finished weather api service for all cities")
     
