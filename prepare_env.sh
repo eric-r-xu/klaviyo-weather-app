@@ -1,9 +1,4 @@
 #!/bin/sh
-sudo apt-get update
-sudo apt-get upgrade
-sudo apt-get install git
-cd ~/
-git clone https://github.com/eric-r-xu/klaviyo-weather-app.git
 sudo apt install -y python3-pip
 sudo apt-get install python3-setuptools
 cd klaviyo-weather-app;sudo apt-get install python3-venv
