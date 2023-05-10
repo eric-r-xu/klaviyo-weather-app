@@ -1,6 +1,6 @@
 from flask import Flask
 from celery import Celery
-from initial_mysql imporet *
+from initial_mysql import *
 from time import sleep
 from flask_mail import Mail, Message
 import pandas as pd
