@@ -7,7 +7,6 @@ import requests
 import time
 import pytz
 from local_settings import *
-# import datetime
 from datetime import timedelta, datetime
 import gc
 import pymysql
@@ -54,7 +53,7 @@ logging.basicConfig(
 
 
 # connect to sql
-async def getSQLConn(host, user, password):
+def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
 
 # convert Kelvin to Fahrenheit
@@ -66,7 +65,7 @@ mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["pass
 
 
 # run query
-async def runQuery(mysql_conn, query):
+def runQuery(mysql_conn, query):
     with mysql_conn.cursor() as cursor:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
@@ -102,7 +101,7 @@ async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, ci
             [obj["weather"][0]["main"], obj["weather"][0]["description"]]
         )
         today_max_degrees_F = K_to_F(obj["main"]["temp_max"])
-        time.sleep(0.8)  # reduce cadence of api calls
+        time.sleep(0.5)  # reduce cadence of api calls
         # forecast weather api call
         r = requests.get(
             "http://api.openweathermap.org/data/2.5/forecast?id=%s&appid=%s"
@@ -159,6 +158,8 @@ async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, ci
         # NYC, Boston, Reading, use 3 hour delay
         if int(city_id) in [5392171, 4930956, 4948462]:
             delay_seconds = 10800
+        elif int(city_id) in [4683416, 4671240, 4719457, 4705349, 4726206, 4684888, 2646507, 4693003, 5525577, 4693003, 4700168]:
+            delay_seconds = 7200
         else:
             delay_seconds = 0
 
@@ -219,11 +220,12 @@ async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, ci
                                 conn=conn,
                             )
                         )
+                        async_email_tasks.append(email_task)
                     except:
                         logging.error(
                             f"""failed to schedule email to {recipient} with delay of {delay_seconds} seconds """
                         )
-                    async_email_tasks.append(email_task)
+                    
         await asyncio.gather(*async_email_tasks)   
     logging.info("finished email service")
 
