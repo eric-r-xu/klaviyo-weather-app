@@ -15,7 +15,7 @@ import pymysql
 import warnings
 
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
 app.config.update(
@@ -32,11 +32,12 @@ app.config.update(
 
 email_service = Mail(app)
 
+
 async def send_async_email(city_name, msg, delay_seconds, email_service, recipient):
-    logging.info(f'starting async email task for {recipient} for location {city_name}')
-    logging.info(f'Entering timer of {delay_seconds} seconds')
+    logging.info(f"starting async email task for {recipient} for location {city_name}")
+    logging.info(f"Entering timer of {delay_seconds} seconds")
     await asyncio.sleep(delay_seconds)
-    logging.info(f'Exiting timer of {delay_seconds} seconds')
+    logging.info(f"Exiting timer of {delay_seconds} seconds")
     with email_service.connect() as conn:
         logging.info(f"recipient = {recipient}")
         try:
@@ -48,19 +49,18 @@ async def send_async_email(city_name, msg, delay_seconds, email_service, recipie
             logging.error(
                 f"""failed to send email to {recipient} with delay of {delay_seconds} seconds """
             )
-                    
-    logging.info('async email task for {recipient} for location {city_name} finished')       
 
 
 def timetz(*args):
     return datetime.now(tz).timetuple()
+
 
 # log in PST
 tz = pytz.timezone("US/Pacific")
 logging.Formatter.converter = timetz
 
 logging.basicConfig(
-    filename="/logs/async_test.log",
+    filename="/logs/api_and_async_email.log",
     format="%(asctime)s %(levelname)s: %(message)s",
     level=logging.INFO,
     datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
@@ -70,6 +70,7 @@ logging.basicConfig(
 # connect to sql
 def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
+
 
 # convert Kelvin to Fahrenheit
 def K_to_F(degrees_kelvin):
@@ -84,17 +85,17 @@ def runQuery(mysql_conn, query):
     with mysql_conn.cursor() as cursor:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
-            cursor.execute(query)            
-            
-           
+            cursor.execute(query)
+
+
 async def main():
     tasks = []
     # today's date
     dateFact = datetime.now().strftime("%Y-%m-%d")
-    logging.info('dateFact=%s' % (dateFact))
+    logging.info("dateFact=%s" % (dateFact))
     # tomorrow's date
     tomorrow = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
-    logging.info('tomorrow=%s' % (tomorrow))
+    logging.info("tomorrow=%s" % (tomorrow))
 
     # truncate table tblFactCityWeather with current data and data older than 10 days
     query = """DELETE from klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE or dateFact<date_sub(CURRENT_DATE, interval 10 day) """
@@ -171,13 +172,25 @@ async def main():
         if int(city_id) in [5128594, 4930956, 4948462]:
             delay_seconds = 0
         # Central Time
-        elif int(city_id) in [4683416, 4671240, 4719457, 4705349, 4726206, 4684888, 2646507, 4693003, 5525577, 4693003, 4700168]:
+        elif int(city_id) in [
+            4683416,
+            4671240,
+            4719457,
+            4705349,
+            4726206,
+            4684888,
+            2646507,
+            4693003,
+            5525577,
+            4693003,
+            4700168,
+        ]:
             delay_seconds = 3600
         # Pacific Time
         else:
             delay_seconds = 10800
 
-        logging.info(f'delay_seconds = {delay_seconds}')
+        logging.info(f"delay_seconds = {delay_seconds}")
 
         # find set of recipients per city id
         _tblDimEmailCity = tblDimEmailCity[tblDimEmailCity["city_id"] == city_id]
@@ -225,10 +238,14 @@ async def main():
                         today_weather,
                         gif_link,
                     )
-                    task = asyncio.create_task(send_async_email(city_name, msg, delay_seconds, email_service, recipient))
+                    task = asyncio.create_task(
+                        send_async_email(
+                            city_name, msg, delay_seconds, email_service, recipient
+                        )
+                    )
                     tasks.append(task)
 
-
     await asyncio.gather(*tasks)
+
 
 asyncio.run(main())
