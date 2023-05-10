@@ -33,7 +33,7 @@ app.config.update(
 email_service = Mail(app)
 
 async def send_async_email(city_name, msg, delay_seconds, email_service, recipient):
-    logging.info('starting async email task for {recipient} for location {city_name}')
+    logging.info(f'starting async email task for {recipient} for location {city_name}')
     logging.info(f'Entering timer of {delay_seconds} seconds')
     await asyncio.sleep(delay_seconds)
     logging.info(f'Exiting timer of {delay_seconds} seconds')
@@ -168,7 +168,7 @@ async def main():
         city_name = city_dict[str(city_id)]
         gc.collect()
         # Eastern Time
-        if int(city_id) in [5392171, 4930956, 4948462]:
+        if int(city_id) in [5128594, 4930956, 4948462]:
             delay_seconds = 0
         # Central Time
         elif int(city_id) in [4683416, 4671240, 4719457, 4705349, 4726206, 4684888, 2646507, 4693003, 5525577, 4693003, 4700168]:
