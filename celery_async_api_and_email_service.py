@@ -32,7 +32,9 @@ app.config.update(
 
 email_service = Mail(app)
 
-@Celery.task
+celery = Celery(__name__, broker='redis://localhost:6379/0')
+
+@celery.task
 def send_async_email(msg, delay_seconds, email_service, recipient):
     """Background task to send an email with Flask-Mail."""
     with app.app_context():
