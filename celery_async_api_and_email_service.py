@@ -32,15 +32,7 @@ app.config.update(
 
 email_service = Mail(app)
 
-app.config.from_mapping(
-    CELERY=dict(
-        broker_url='redis://localhost:6379',
-        result_backend='redis://localhost:6379',
-        task_ignore_result=True,
-    ),
-)
-
-celery_app = celery_init_app(app)
+celery = Celery(__name__, broker='redis://localhost:6379')
 
 
 @celery.task
