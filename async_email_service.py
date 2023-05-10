@@ -7,8 +7,8 @@ import requests
 import time
 import pytz
 from local_settings import *
-import datetime
-from datetime import timedelta
+# import datetime
+from datetime import timedelta, datetime
 import gc
 import pymysql
 import warnings
