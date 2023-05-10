@@ -57,6 +57,10 @@ logging.basicConfig(
 async def getSQLConn(host, user, password):
     return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
 
+# convert Kelvin to Fahrenheit
+def K_to_F(degrees_kelvin):
+    return int((float(degrees_kelvin) * (9 / 5)) - 459.67)
+
 
 mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
