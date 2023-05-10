@@ -11,6 +11,12 @@ Email web subscription service that makes weather based marketing emails for the
 
 3. obtain relevant credentials and follow instructions in **local_settings_template.py** for authorization and to initialize city variables
 
+sudo apt-get update
+sudo apt-get upgrade
+sudo apt-get install git
+cd ~/
+git clone https://github.com/eric-r-xu/klaviyo-weather-app.git
+
 4. update necessary software, setup virtual environment, install git, and  clone this repo<br>
 `sh prepare_env.sh`
 
