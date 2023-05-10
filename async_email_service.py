@@ -227,4 +227,4 @@ async def main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, ci
 
 
 
-asyncio.run(main())
+asyncio.run(main(cityIDset, dateFact, tomorrow, email_service, app, mysql_conn, city_dict))
