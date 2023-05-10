@@ -29,11 +29,13 @@ Install latest python and all packages and activate virtual environment
     cd klaviyo-weather-app
     sh prepare_env.sh
 
+**SUBSCRIPTION APPLICATION SERVICE**
 Run flask web application in background (logs in /logs/subscription_service.log including standard error)
 
     nohup /$(whoami)/klaviyo-weather-app/env/bin/python /$(whoami)/klaviyo-weather-app/subscription_service.py 2>&1 &
     
-Schedule cron for scripted api call for 8:55 am EST (5 minute buffer) to get latest weather data and send async emails depending on time zone (limited support)
+**WEATHER API SERVICE** and **WEATHER EMAIL SERVICE**
+Schedule cron for scripted api call for 8:55 am EST (5 minute buffer) to get latest weather data and send async emails depending on time zone (limited support) 
 
     export VISUAL=nano;crontab -e
     
