@@ -32,7 +32,16 @@ app.config.update(
 
 email_service = Mail(app)
 
-celery = Celery(__name__, broker='redis://localhost:6379/0')
+app.config.from_mapping(
+    CELERY=dict(
+        broker_url='redis://localhost:6379/0',
+        result_backend='redis://localhost:6379/0',
+        task_ignore_result=True,
+    ),
+)
+
+celery_app = celery_init_app(app)
+
 
 @celery.task
 def send_async_email(msg, delay_seconds, email_service, recipient):
