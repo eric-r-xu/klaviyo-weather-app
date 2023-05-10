@@ -172,12 +172,13 @@ for city_id, today_weather, today_F, tomorrow_F in zipped_array:
     ]
 for city_id in city_id_set:
     gc.collect()
-    # NYC, Boston, Reading, use 3 hour delay
+    # Eastern Time
     if int(city_id) in [5392171, 4930956, 4948462]:
         delay_seconds = 10800
     # Central Time
     elif int(city_id) in [4683416, 4671240, 4719457, 4705349, 4726206, 4684888, 2646507, 4693003, 5525577, 4693003, 4700168]:
-        delay_seconds = 7200
+        delay_seconds = 3600
+    # Pacific Time
     else:
         delay_seconds = 0
 
