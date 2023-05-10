@@ -14,14 +14,7 @@ import gc
 import pymysql
 import warnings
 
-
-async def send_async_email(i, msg, delay_seconds, email_service, recipient):
-    print(f"Task {i} starting")
-    
-    print(f"Task {i} finished")
-
-
-def send_async_email(city_name, msg, delay_seconds, email_service, recipient):
+async def send_async_email(city_name, msg, delay_seconds, email_service, recipient):
     logging.info('starting async email task for {recipient} for location {city_name}')
     logging.info(f'Entering timer of {delay_seconds} seconds')
     await asyncio.sleep(delay_seconds)
