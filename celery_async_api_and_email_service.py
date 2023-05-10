@@ -108,7 +108,7 @@ query = """DELETE from klaviyo.tblFactCityWeather where dateFact=CURRENT_DATE or
 runQuery(mysql_conn, query)
 logging.info("finished truncate table step")
 for _i, cityID in enumerate(cityIDset):
-    city_name = city_dict['{cityID}']
+    city_name = city_dict[str(cityID)]
     logging.info(f"cityID={cityID}, city_name={city_name}")
     # current weather api call
     r = requests.get(
