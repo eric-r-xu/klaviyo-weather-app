@@ -3,12 +3,10 @@ import pandas as pd
 import warnings
 from local_settings import *
 
+
 # connect to sql
 def getSQLConn(host, user, password):
-	return pymysql.connect(host=host,\
-		user=user,\
-		passwd=password,
-		autocommit=True)
+    return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
 
 
 createSchema = "CREATE SCHEMA IF NOT EXISTS klaviyo;"
@@ -33,17 +31,15 @@ KEY `idxDateFact` (`dateFact`),
 KEY `idxCityID` (`city_id`)) 
 ENGINE=InnoDB DEFAULT CHARSET=latin1;"""
 
-mysql_conn = getSQLConn(MYSQL_AUTH['host'], MYSQL_AUTH['user'], MYSQL_AUTH['password'])
+mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
 with mysql_conn.cursor() as cursor:
-	with warnings.catch_warnings():
-		warnings.simplefilter('ignore')
-		cursor.execute(createSchema)
-		cursor.execute(createTblDimEmailCity)
-		cursor.execute(createTblFactCityWeather)
-		
-		
-		
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        cursor.execute(createSchema)
+        cursor.execute(createTblDimEmailCity)
+        cursor.execute(createTblFactCityWeather)
+
 
 dtype_options = {
     "id": int,
@@ -52,14 +48,11 @@ dtype_options = {
     "country": str,
     "lat": float,
     "lon": float,
-    "utc_offset_hours_tzwhere": float,
-    "utc_offset_seconds_tzwhere": float,
-    "utc_offset_hours_google": float,
-    "utc_offset_seconds_google": float,
+    "u_offset_seconds": float,
 }
 
 # Import the CSV file with specified data types
-df = pd.read_csv("city_list.tsv", sep="\t", dtype=dtype_options)
+df = pd.read_csv("city_dict.tsv", sep="\t", dtype=dtype_options)
 
 df = df.fillna("")
 
@@ -71,7 +64,8 @@ city_dict = {
     )
 }
 
+city_dict_nested = df.set_index("id").T.to_dict()
+
 cityIDset = {int(x) for x in city_dict.keys()}
 cityNameSet = {str(x) for x in city_dict.values()}
 city_name_to_id = {v: k for k, v in city_dict.items()}
-
