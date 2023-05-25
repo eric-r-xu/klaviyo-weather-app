@@ -105,7 +105,7 @@ async def api_and_email_task(
                 msg.html = """ %s - %s degrees F - %s <br><br><img src="%s" \
                 width="640" height="480"> """ % (
                     city_name,
-                    today_F,
+                    today_max_degrees_F,
                     today_weather,
                     gif_link,
                 )
