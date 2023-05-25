@@ -1,4 +1,5 @@
 import pymysql
+import pandas as pd
 import warnings
 from local_settings import *
 
