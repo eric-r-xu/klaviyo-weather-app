@@ -34,7 +34,7 @@ email_service = Mail(app)
 
 
 async def api_and_email_task(
-    city_name, delay_seconds, recipients, app, email_service
+    cityID, city_name, delay_seconds, recipients, app, email_service
 ):
     logging.info(f"starting async function `get_data_and_email_task` for {city_name}")
     # current weather api call
@@ -192,7 +192,7 @@ async def main():
         logging.info(f"cityID={str(cityID)}, city_name={city_name}")
 
         task = asyncio.create_task(
-            api_and_email_task(city_name, 0, email_service, recipients, app)
+            api_and_email_task(cityID, city_name, 0, email_service, recipients, app)
         )
         tasks.append(task)
 
