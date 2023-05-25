@@ -168,7 +168,7 @@ async def main():
     logging.info("tomorrow=%s" % (tomorrow))
 
     # truncate table tblFactCityWeather with current data and data older than 60 days
-    query = """DELETE from klaviyo.tblFactCityWeather where dateFact<date_sub(CURRENT_DATE, interval 60 day) """
+    query = """DELETE from klaviyo.tblFactCityWeather where dateFact<date_sub(CURRENT_DATE, interval 60 day) or dateFact=CURRENT_DATE """
     runQuery(mysql_conn, query)
     logging.info(
         "finished purging weather data older than 60 days from klaviyo.tblFactCityWeather"
