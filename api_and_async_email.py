@@ -36,7 +36,11 @@ email_service = Mail(app)
 async def api_and_email_task(
     cityID, city_name, dateFact, tomorrow, delay_seconds, email_service, recipients
 ):
-    logging.info(f"starting async function `get_data_and_email_task` for {city_name}")
+    logging.info(f"starting async function `api_and_email_task` for {city_name}")
+    logging.info(f"Entering timer of {delay_seconds} seconds")
+    await asyncio.sleep(delay_seconds)
+    logging.info(f'Exiting timer of {delay_seconds} seconds')
+    
     # current weather api call
     r = requests.get(
         "http://api.openweathermap.org/data/2.5/weather?id=%s&appid=%s"
@@ -118,7 +122,7 @@ async def api_and_email_task(
                     logging.error(
                         f"""failed to send email to {recipient} with delay of {delay_seconds} seconds """
                     )
-    logging.info(f"finished async function `get_data_and_email_task` for {city_name}")
+    logging.info(f"finished async function `api_and_email_task` for {city_name}")
 
 
 def timetz(*args):
@@ -160,11 +164,11 @@ def runQuery(mysql_conn, query):
 
 async def main():
     tasks = []
-    # today's date
-    dateFact = datetime.now().strftime("%Y-%m-%d")
+    # today's date (U timezone UTC-11)
+    dateFact = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
     logging.info("dateFact=%s" % (dateFact))
-    # tomorrow's date
-    tomorrow = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
+    # tomorrow's date (U timezone UTC-11)
+    tomorrow = str((datetime.now() + timedelta(2)).strftime("%Y-%m-%d"))
     logging.info("tomorrow=%s" % (tomorrow))
 
     # truncate table tblFactCityWeather with current data and data older than 60 days
@@ -189,10 +193,11 @@ async def main():
         recipients = str(getattr(row, "email_set")).split(",")
         cityID = getattr(row, "city_id")
         city_name = city_dict[str(cityID)]
+        delay_seconds = int(city_dict_nested[cityID]["u_offset_seconds"])
         logging.info(f"cityID={str(cityID)}, city_name={city_name}")
 
         task = asyncio.create_task(
-            api_and_email_task(cityID, city_name, dateFact, tomorrow, 0, email_service, recipients)
+            api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_seconds, email_service, recipients)
         )
         tasks.append(task)
 
