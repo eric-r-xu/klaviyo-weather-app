@@ -33,7 +33,7 @@ app.config.update(
 email_service = Mail(app)
 
 
-async def get_data_and_email_task(
+async def api_and_email_task(
     city_name, delay_seconds, recipients, app, email_service
 ):
     logging.info(f"starting async function `get_data_and_email_task` for {city_name}")
@@ -192,7 +192,7 @@ async def main():
         logging.info(f"cityID={str(cityID)}, city_name={city_name}")
 
         task = asyncio.create_task(
-            send_async_email(city_name, 0, email_service, recipients, app)
+            api_and_email_task(city_name, 0, email_service, recipients, app)
         )
         tasks.append(task)
 
