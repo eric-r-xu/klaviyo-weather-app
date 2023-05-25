@@ -78,7 +78,7 @@ async def api_and_email_task(
         logging.info("sunny")
         subject_value = "It's nice out! Enjoy a discount on us."
         gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
-    elif today_F >= tomorrow_F + 5:
+    elif today_max_degrees_F >= tomorrow_max_degrees_F + 5:
         logging.info("warm")
         subject_value = "It's nice out! Enjoy a discount on us."
         gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
@@ -86,7 +86,7 @@ async def api_and_email_task(
         logging.info("precipitation")
         subject_value = "Not so nice out? That's okay, enjoy a discount on us."
         gif_link = "https://media.giphy.com/media/1hM7Uh46ixnsWRMA7w/giphy.gif"
-    elif today_F + 5 <= tomorrow_F:
+    elif today_max_degrees_F + 5 <= tomorrow_max_degrees_F:
         logging.info("cold")
         subject_value = "Not so nice out? That's okay, enjoy a discount on us."
         gif_link = "https://media.giphy.com/media/26FLdaDQ5f72FPbEI/giphy.gif"
