@@ -1,19 +1,14 @@
 from flask import Flask
-import asyncio
-from local_settings import *
-from initialize_mysql import *
-from time import sleep
 from flask_mail import Mail, Message
-import pandas as pd
-import logging
-import requests
-import time
-import pytz
 from datetime import timedelta, datetime
-import gc
+import aiohttp
+import asyncio
+import logging
+import pytz
 import pymysql
 import warnings
-
+from local_settings import *
+from initialize_mysql import *
 
 warnings.filterwarnings("ignore")
 
@@ -32,163 +27,100 @@ app.config.update(
 
 email_service = Mail(app)
 
+async def fetch(session, url):
+    async with session.get(url) as response:
+        return await response.text()
 
-async def api_and_email_task(
-    cityID, city_name, dateFact, tomorrow, delay_seconds, email_service, recipients
-):
+async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_seconds, email_service, recipients):
     logging.info(f"starting async function `api_and_email_task` for {city_name}")
     logging.info(f"Entering timer of {delay_seconds} seconds")
     await asyncio.sleep(delay_seconds)
     logging.info(f'Exiting timer of {delay_seconds} seconds')
     
-    # current weather api call
-    r = requests.get(
-        "http://api.openweathermap.org/data/2.5/weather?id=%s&appid=%s"
-        % (cityID, OPENWEATHERMAP_AUTH["api_key"])
-    )
-    obj = r.json()
-    today_weather = "-".join(
-        [obj["weather"][0]["main"], obj["weather"][0]["description"]]
-    )
-    today_max_degrees_F = K_to_F(obj["main"]["temp_max"])
-    time.sleep(0.5)  # reduce cadence of api calls
-    # forecast weather api call
-    r = requests.get(
-        "http://api.openweathermap.org/data/2.5/forecast?id=%s&appid=%s"
-        % (cityID, OPENWEATHERMAP_AUTH["api_key"])
-    )
-    obj = r.json()
-    tmrw_objs = [x for x in obj["list"] if x["dt_txt"][0:10] == tomorrow]
-    tomorrow_max_degrees_F = K_to_F(
-        max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs])
-    )
-    query = (
-        "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, \
-    tomorrow_max_degrees_F) VALUES (%i, '%s', '%s', %i, %i)"
-        % (
-            cityID,
-            dateFact,
-            today_weather,
-            today_max_degrees_F,
-            tomorrow_max_degrees_F,
-        )
-    )
-    runQuery(mysql_conn, query)
-    logging.info("updated klaviyo.tblactCityWeather")
+    async with aiohttp.ClientSession() as session:
+        url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
+        curr_r = await fetch(session, url)
+        curr_obj = curr_r.json()
 
-    precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
-    sunny_words = ["sunny", "clear"]
-    if any(x in today_weather for x in sunny_words):
-        logging.info("sunny")
-        subject_value = "It's nice out! Enjoy a discount on us."
-        gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
-    elif today_max_degrees_F >= tomorrow_max_degrees_F + 5:
-        logging.info("warm")
-        subject_value = "It's nice out! Enjoy a discount on us."
-        gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
-    elif any(x in today_weather for x in precipitation_words):
-        logging.info("precipitation")
-        subject_value = "Not so nice out? That's okay, enjoy a discount on us."
-        gif_link = "https://media.giphy.com/media/1hM7Uh46ixnsWRMA7w/giphy.gif"
-    elif today_max_degrees_F + 5 <= tomorrow_max_degrees_F:
-        logging.info("cold")
-        subject_value = "Not so nice out? That's okay, enjoy a discount on us."
-        gif_link = "https://media.giphy.com/media/26FLdaDQ5f72FPbEI/giphy.gif"
-    else:
-        logging.info("other")
-        subject_value = "Enjoy a discount on us."
-        gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
-    with app.app_context():
-        with email_service.connect() as conn:
-            for recipient in recipients:
-                msg = Message(
-                    subject_value,
-                    recipients=[recipient],
-                    sender=app.config["MAIL_USERNAME"],
-                )
-                msg.html = """ %s - %s degrees F - %s <br><br><img src="%s" \
-                width="640" height="480"> """ % (
-                    city_name,
-                    today_max_degrees_F,
-                    today_weather,
-                    gif_link,
-                )
-                try:
-                    conn.send(msg)
-                    logging.info(
-                        f"""succeeded sending email to {recipient} with delay of {delay_seconds} seconds """
-                    )
-                except:
-                    logging.error(
-                        f"""failed to send email to {recipient} with delay of {delay_seconds} seconds """
-                    )
-    logging.info(f"finished async function `api_and_email_task` for {city_name}")
+        today_weather = "-".join([curr_obj["weather"][0]["main"], curr_obj["weather"][0]["description"]])
+        today_max_degrees_F = K_to_F(curr_obj["main"]["temp_max"])
 
+        url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
+        forecast_r = await fetch(session, url)
+        forecast_obj = forecast_r.json()
 
-def timetz(*args):
-    return datetime.now(tz).timetuple()
+        tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == tomorrow]
+        tomorrow_max_degrees_F = K_to_F(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs]))
 
+        query = "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES (%s, %s, %s, %s, %s)"
+        data = (cityID, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F)
+        runQuery(mysql_conn, query, data)
+        logging.info("updated klaviyo.tblactCityWeather")
 
-# log in PST
-tz = pytz.timezone("US/Pacific")
-logging.Formatter.converter = timetz
+        # Weather conditions and email subject/gifs
+        precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
+        sunny_words = ["sunny", "clear"]
+        if any(x in today_weather for x in sunny_words):
+            logging.info("sunny")
+            subject_value = "It's nice out! Enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
+        elif today_max_degrees_F >= tomorrow_max_degrees_F + 5:
+            logging.info("warm")
+            subject_value = "It's nice out! Enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
+        elif any(x in today_weather for x in precipitation_words):
+            logging.info("precipitation")
+            subject_value = "Not so nice out? That's okay, enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/1hM7Uh46ixnsWRMA7w/giphy.gif"
+        elif today_max_degrees_F + 5 <= tomorrow_max_degrees_F:
+            logging.info("cold")
+            subject_value = "Not so nice out? That's okay, enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/26FLdaDQ5f72FPbEI/giphy.gif"
+        else:
+            logging.info("other")
+            subject_value = "Enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
 
-logging.basicConfig(
-    filename="/logs/api_and_async_email_retry.log",
-    format="%(asctime)s %(levelname)s: %(message)s",
-    level=logging.INFO,
-    datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
-)
+        messages = []
+        for recipient in recipients:
+            msg = Message(subject_value, recipients=[recipient], sender=app.config["MAIL_USERNAME"])
+            msg.html = f""" {city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src="{gif_link}" width="640" height="480"> """
+            messages.append(msg)
 
+        with app.app_context():
+            with email_service.connect() as conn:
+                conn.send(messages)
 
-# connect to sql
-def getSQLConn(host, user, password):
-    return pymysql.connect(host=host, user=user, passwd=password, autocommit=True)
-
-
-# convert Kelvin to Fahrenheit
-def K_to_F(degrees_kelvin):
-    return int((float(degrees_kelvin) * (9 / 5)) - 459.67)
-
-
-mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
-
-
-# run query
-def runQuery(mysql_conn, query):
-    with mysql_conn.cursor() as cursor:
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore")
-            cursor.execute(query)
+        logging.info(f"finished async function `api_and_email_task` for {city_name}")
 
 
 async def main():
     tasks = []
-    # today's date (U timezone UTC-11)
-    dateFact = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
-    logging.info("dateFact=%s" % (dateFact))
-    # tomorrow's date (U timezone UTC-11)
-    tomorrow = str((datetime.now() + timedelta(2)).strftime("%Y-%m-%d"))
-    logging.info("tomorrow=%s" % (tomorrow))
+    tz = pytz.timezone("US/Pacific")
+    logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
 
-    # truncate table tblFactCityWeather with current data and data older than 60 days
+    logging.basicConfig(
+        filename="/logs/api_and_async_email_20230527.log",
+        format="%(asctime)s %(levelname)s: %(message)s",
+        level=logging.INFO,
+        datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
+    )
+
+    mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
+
     query = """DELETE from klaviyo.tblFactCityWeather where dateFact<date_sub(CURRENT_DATE, interval 60 day) or dateFact=CURRENT_DATE """
     runQuery(mysql_conn, query)
-    logging.info(
-        "finished purging weather data older than 60 days from klaviyo.tblFactCityWeather"
-    )
-    # truncate table tblDimEmailCity with signup dates older than 10 days
+    logging.info("finished purging weather data today and older than 60 days from klaviyo.tblFactCityWeather")
+
     query = """DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub(CURRENT_DATE, interval 10 day) """
     runQuery(mysql_conn, query)
-    logging.info(
-        "finished purging data older than 10 days from klaviyo.tblDimEmailCity"
-    )
-    # get only relevant city_id data from tblDimEmailCity
+    logging.info("finished purging data older than 10 days from klaviyo.tblDimEmailCity")
+
     tblDimEmailCity = pd.read_sql_query(
         """SELECT group_concat(convert(email,char)) AS email_set, city_id FROM klaviyo.tblDimEmailCity group by city_id""",
         con=mysql_conn,
     )
-    # for future, loop through by delay_time, with no delay time first
+
     for row in tblDimEmailCity.itertuples(index=True, name="Pandas"):
         recipients = str(getattr(row, "email_set")).split(",")
         cityID = getattr(row, "city_id")
@@ -204,4 +136,5 @@ async def main():
     await asyncio.gather(*tasks)
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
