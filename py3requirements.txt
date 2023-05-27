@@ -8,6 +8,7 @@ Jinja2
 SQLAlchemy
 pymysql
 Werkzeug
+aiohttp
 decorator
 ipython
 itsdangerous
