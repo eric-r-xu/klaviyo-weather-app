@@ -108,15 +108,6 @@ async def main():
 
     mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
-    def runQuery(mysql_conn, query, data=None):
-        with mysql_conn.cursor() as cursor:
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore")
-                if data:
-                    cursor.execute(query, data)
-                else:
-                    cursor.execute(query)
-
     query = """DELETE from klaviyo.tblFactCityWeather where dateFact<date_sub(CURRENT_DATE, interval 60 day) or dateFact=CURRENT_DATE """
     runQuery(mysql_conn, query)
     logging.info("finished purging weather data today and older than 60 days from klaviyo.tblFactCityWeather")
@@ -129,6 +120,9 @@ async def main():
         """SELECT group_concat(convert(email,char)) AS email_set, city_id FROM klaviyo.tblDimEmailCity group by city_id""",
         con=mysql_conn,
     )
+    
+    dateFact = str((datetime.now() + timedelta(1)).strftime("%Y-%m-%d"))
+    tomorrow = str((datetime.now() + timedelta(2)).strftime("%Y-%m-%d"))
 
     for row in tblDimEmailCity.itertuples(index=True, name="Pandas"):
         recipients = str(getattr(row, "email_set")).split(",")
