@@ -99,7 +99,7 @@ async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_second
                 port=587,
                 username=GMAIL_AUTH['mail_username'],
                 password=GMAIL_AUTH['mail_password'],
-                use_tls=True,
+                use_tls=False,
             )
             logging.info(f"Sent email to {recipient}")
 
