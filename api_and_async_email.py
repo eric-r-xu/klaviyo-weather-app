@@ -113,14 +113,6 @@ async def main():
 
     mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
-    def run_query(mysql_conn, query, data=None):
-        with mysql_conn.cursor() as cursor:
-            if data:
-                cursor.execute(query, data)
-            else:
-                cursor.execute(query)
-
-
     query = """DELETE from klaviyo.tblFactCityWeather where dateFact<date_sub(CURRENT_DATE, interval 60 day) or dateFact=CURRENT_DATE """
     run_query(mysql_conn, query)
     logging.info("finished purging weather data today and older than 60 days from klaviyo.tblFactCityWeather")
