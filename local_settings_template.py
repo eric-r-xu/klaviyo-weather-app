@@ -21,4 +21,5 @@ MYSQL_AUTH = {
 GMAIL_AUTH = {
     "mail_username": "xxx",  # (e.g. 'me@gmail.com')
     "mail_password": "xxx",
+    "mail_server": "smtp.gmail.com",
 }

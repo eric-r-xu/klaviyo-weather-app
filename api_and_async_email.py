@@ -1,24 +1,24 @@
+# libraries
 import asyncio
 import logging
 import warnings
 import json
-from flask import Flask
-from flask_mail import Message
 from datetime import timedelta, datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
 import aiohttp
 import pytz
 import pymysql
 import pandas as pd
+import aiosmtplib
 
+# local libraries
 from local_settings import *
 from initialize_mysql import *
 
 
 warnings.filterwarnings("ignore")
-
-app = Flask(__name__)
-app.config.from_object("local_settings")
-
 
 def run_query(mysql_conn, query, data=None):
     with mysql_conn.cursor() as cursor:
@@ -86,24 +86,22 @@ async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_second
             subject_value = "Enjoy a discount on us."
             gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
 
-        messages = []
         for recipient in recipients:
-            msg = Message(subject_value, recipients=[recipient])
-            msg.sender = app.config.get("MAIL_USERNAME")
-            msg.html = f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='640' height='480'>"
-            messages.append(msg)
+            message = MIMEMultipart()
+            message["From"] = MAIL_USERNAME
+            message["To"] = recipient
+            message["Subject"] = Header(subject_value, 'utf-8')
+            message.attach(MIMEText(f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='640' height='480'>", "html"))
 
-        async with aiohttp.ClientSession() as session:
-            for msg in messages:
-                async with session.post(
-                    app.config.get("MAIL_SERVER"),
-                    data=msg.as_string(),
-                    headers={"Content-Type": "application/octet-stream"},
-                ) as response:
-                    if response.status != 200:
-                        logging.error(f"Failed to send email to {msg.recipients} with response: {response.status}")
-                    else:
-                        logging.info(f"Sent email to {msg.recipients}")
+            await aiosmtplib.send(
+                message,
+                hostname=MAIL_SERVER,
+                port=465,
+                username=GMAIL_AUTH['mail_username'],
+                password=GMAIL_AUTH['mail_password'],
+                use_tls=False,
+            )
+            logging.info(f"Sent email to {recipient}")
 
         logging.info(f"finished async function `api_and_email_task` for {city_name}")
 
@@ -114,7 +112,7 @@ async def main():
     logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
 
     logging.basicConfig(
-        filename="/logs/api_and_async_email_20230527.log",
+        filename="/logs/api_and_async_email_20230528.log",
         format="%(asctime)s %(levelname)s: %(message)s",
         level=logging.INFO,
         datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
