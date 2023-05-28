@@ -9,9 +9,9 @@ import aiohttp
 import pytz
 import pymysql
 import pandas as pd
-from initialize_mysql import *
-from local_settings import *
 
+from local_settings import *
+from initialize_mysql import *
 
 
 warnings.filterwarnings("ignore")
