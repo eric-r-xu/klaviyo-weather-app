@@ -95,7 +95,7 @@ async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_second
 
             await aiosmtplib.send(
                 message,
-                hostname=MAIL_SERVER,
+                hostname=GMAIL_AUTH['mail_server'],
                 port=465,
                 username=GMAIL_AUTH['mail_username'],
                 password=GMAIL_AUTH['mail_password'],
