@@ -2,14 +2,13 @@ import asyncio
 import logging
 import warnings
 import json
-from flask import Flask
+from flask import Flask, current_app
 from flask_mail import Mail, Message
 from datetime import timedelta, datetime
 import aiohttp
 import pytz
 import pymysql
 import pandas as pd
-from flask import current_app
 
 from local_settings import *
 from initialize_mysql import *
@@ -146,4 +145,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    with app.app_context():
+        asyncio.run(main())
