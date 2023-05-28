@@ -22,6 +22,14 @@ app.config.from_object("local_settings")
 email_service = Mail(app)
 
 
+def run_query(mysql_conn, query, data=None):
+    with mysql_conn.cursor() as cursor:
+        if data:
+            cursor.execute(query, data)
+        else:
+            cursor.execute(query)
+
+
 async def fetch(session, url):
     async with session.get(url) as response:
         return await response.text()
