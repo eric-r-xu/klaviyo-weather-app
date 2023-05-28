@@ -111,6 +111,11 @@ async def main():
             else:
                 cursor.execute(query)
 
+    # convert Kelvin to Fahrenheit
+    def K_to_F(degrees_kelvin):
+        return int((float(degrees_kelvin) * (9 / 5)) - 459.67)
+
+
     query = """DELETE from klaviyo.tblFactCityWeather where dateFact<date_sub(CURRENT_DATE, interval 60 day) or dateFact=CURRENT_DATE """
     run_query(mysql_conn, query)
     logging.info("finished purging weather data today and older than 60 days from klaviyo.tblFactCityWeather")
