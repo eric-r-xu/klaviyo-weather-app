@@ -36,10 +36,9 @@ async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_second
     async with aiohttp.ClientSession() as session:
         url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
         curr_r = await fetch(session, url)
-        curr_obj = curr_r.json()
 
-        today_weather = "-".join([curr_obj["weather"][0]["main"], curr_obj["weather"][0]["description"]])
-        today_max_degrees_F = K_to_F(curr_obj["main"]["temp_max"])
+        today_weather = "-".join([curr_r["weather"][0]["main"], curr_r["weather"][0]["description"]])
+        today_max_degrees_F = K_to_F(curr_r["main"]["temp_max"])
 
         url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
         forecast_r = await fetch(session, url)
