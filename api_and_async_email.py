@@ -32,17 +32,18 @@ async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_second
     logging.info(f"Entering timer of {delay_seconds} seconds")
     await asyncio.sleep(delay_seconds)
     logging.info(f"Exiting timer of {delay_seconds} seconds")
-
+    
     async with aiohttp.ClientSession() as session:
         url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
         curr_r = await fetch(session, url)
-        print(f"curr_r = {curr_r}")
-        today_weather = "-".join([curr_r["weather"][0]["main"], curr_r["weather"][0]["description"]])
-        today_max_degrees_F = K_to_F(curr_r["main"]["temp_max"])
+        curr_obj = json.loads(curr_r)  # Parse the response as JSON
+
+        today_weather = "-".join([curr_obj["weather"][0]["main"], curr_obj["weather"][0]["description"]])
+        today_max_degrees_F = K_to_F(curr_obj["main"]["temp_max"])
 
         url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
         forecast_r = await fetch(session, url)
-        forecast_obj = forecast_r.json()
+        forecast_obj = json.loads(forecast_r)  # Parse the response as JSON
 
         tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == tomorrow]
         tomorrow_max_degrees_F = K_to_F(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs]))
