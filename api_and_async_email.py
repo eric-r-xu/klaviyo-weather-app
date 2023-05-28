@@ -88,7 +88,7 @@ async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_second
 
         for recipient in recipients:
             message = MIMEMultipart()
-            message["From"] = MAIL_USERNAME
+            message["From"] = GMAIL_AUTH['mail_username']
             message["To"] = recipient
             message["Subject"] = Header(subject_value, 'utf-8')
             message.attach(MIMEText(f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='640' height='480'>", "html"))
