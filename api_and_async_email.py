@@ -96,10 +96,10 @@ async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_second
             await aiosmtplib.send(
                 message,
                 hostname=GMAIL_AUTH['mail_server'],
-                port=465,
+                port=587,
                 username=GMAIL_AUTH['mail_username'],
                 password=GMAIL_AUTH['mail_password'],
-                use_tls=False,
+                use_tls=True,
             )
             logging.info(f"Sent email to {recipient}")
 
