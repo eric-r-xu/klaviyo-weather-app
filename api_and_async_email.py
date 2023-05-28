@@ -39,14 +39,15 @@ async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_second
         curr_obj = json.loads(curr_r)  # Parse the response as JSON
 
         today_weather = "-".join([curr_obj["weather"][0]["main"], curr_obj["weather"][0]["description"]])
-        today_max_degrees_F = K_to_F(curr_obj["main"]["temp_max"])
+
+        today_max_degrees_F = int((float(curr_obj["main"]["temp_max"]) * (9 / 5)) - 459.67)
 
         url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
         forecast_r = await fetch(session, url)
         forecast_obj = json.loads(forecast_r)  # Parse the response as JSON
 
         tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == tomorrow]
-        tomorrow_max_degrees_F = K_to_F(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs]))
+        tomorrow_max_degrees_F = int((float(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs])) * (9 / 5)) - 459.67)
 
         query = "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES (%s, %s, %s, %s, %s)"
         data = (cityID, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F)
@@ -110,10 +111,6 @@ async def main():
                 cursor.execute(query, data)
             else:
                 cursor.execute(query)
-
-    # convert Kelvin to Fahrenheit
-    def K_to_F(degrees_kelvin):
-        return int((float(degrees_kelvin) * (9 / 5)) - 459.67)
 
 
     query = """DELETE from klaviyo.tblFactCityWeather where dateFact<date_sub(CURRENT_DATE, interval 60 day) or dateFact=CURRENT_DATE """
