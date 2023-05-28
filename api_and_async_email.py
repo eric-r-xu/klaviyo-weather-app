@@ -88,7 +88,7 @@ async def api_and_email_task(cityID, city_name, dateFact, tomorrow, delay_second
 
         messages = []
         for recipient in recipients:
-            msg = Message(subject_value, recipients=[recipient], sender=app.config['MAIL_USERNAME'])
+            msg = Message(subject_value, recipients=[recipient], sender=app.config.get('MAIL_USERNAME'))
             msg.html = f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='640' height='480'>"
             messages.append(msg)
 
