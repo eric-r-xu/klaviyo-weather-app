@@ -127,6 +127,13 @@ async def main():
 
     dateFact = (datetime.now() + timedelta(1)).strftime("%Y-%m-%d")
     tomorrow = (datetime.now() + timedelta(2)).strftime("%Y-%m-%d")
+    
+    logging.info("------------------------------------------------------------------------")
+    logging.info("------------------------------------------------------------------------")
+    
+    
+    logging.info(f"dateFact = {dateFact}")
+    logging.info(f"tomorrow = {tomorrow}")
 
     mysql_conn = getSQLConn(MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"])
 
@@ -165,6 +172,8 @@ async def main():
         tasks.append(task)
 
     await asyncio.gather(*tasks)
+    logging.info("------------------------------------------------------------------------")
+    logging.info("------------------------------------------------------------------------")
 
 
 if __name__ == "__main__":
