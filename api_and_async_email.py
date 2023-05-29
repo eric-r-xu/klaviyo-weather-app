@@ -152,6 +152,7 @@ async def main():
 
     _delay_seconds = []
     for row in tblDimEmailCity.itertuples(index=True, name="Pandas"):
+        cityID = getattr(row, "city_id")
         city_name = city_dict[str(cityID)]
         _delay_seconds.append(int(city_dict_nested[cityID]["u_offset_seconds"]))
 
