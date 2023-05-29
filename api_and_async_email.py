@@ -143,7 +143,16 @@ async def main():
         con=mysql_conn,
     )
 
+    _delay_seconds = []
     for row in tblDimEmailCity.itertuples(index=True, name="Pandas"):
+        city_name = city_dict[str(cityID)]
+        _delay_seconds.append(int(city_dict_nested[cityID]["u_offset_seconds"]))
+
+    # sort by delay seconds ascending to allow concurrent tasks to finish efficiently
+    tblDimEmailCity['delay_seconds'] = _delay_seconds
+    tblDimEmailCity_sorted = tblDimEmailCity.sort_values('delay_seconds')
+
+    for row in tblDimEmailCity_sorted.itertuples(index=True, name="Pandas"):
         recipients = str(getattr(row, "email_set")).split(",")
         cityID = getattr(row, "city_id")
         city_name = city_dict[str(cityID)]
