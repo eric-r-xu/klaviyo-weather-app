@@ -20,10 +20,19 @@ from initialize_mysql import *
 
 warnings.filterwarnings("ignore")
 
-MAX_CONCURRENCY = 10
+MAX_CONCURRENCY = 3
 
 # Instantiate the semaphore
 sem = asyncio.Semaphore(MAX_CONCURRENCY)
+
+async def long_sleep_with_heartbeat(total_sleep_time, heartbeat_interval):
+    intervals = total_sleep_time // heartbeat_interval
+    for _ in range(intervals):
+        await asyncio.sleep(heartbeat_interval)
+        logging.info(f"Heartbeat")
+    remaining_time = total_sleep_time % heartbeat_interval
+    if remaining_time > 0:
+        await asyncio.sleep(remaining_time)
 
 def run_query(mysql_conn, query, data=None):
     with mysql_conn.cursor() as cursor:
@@ -43,7 +52,8 @@ async def api_and_email_task(sem, cityID, city_name, dateFact, tomorrow, delay_s
     async with sem:
         logging.info(f"starting async function `api_and_email_task` for {city_name}")
         logging.info(f"Entering timer of {delay_seconds} seconds")
-        await asyncio.sleep(delay_seconds)
+        # await asyncio.sleep(delay_seconds)
+        asyncio.run(long_sleep_with_heartbeat(delay_seconds, 60))
         logging.info(f"Exiting timer of {delay_seconds} seconds")
 
         async with aiohttp.ClientSession() as session:
