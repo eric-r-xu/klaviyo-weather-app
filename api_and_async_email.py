@@ -1,5 +1,4 @@
 # libraries
-import asyncio
 import logging
 import warnings
 import json
@@ -7,32 +6,28 @@ from datetime import timedelta, datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
-import aiohttp
+import requests
 import pytz
 import pymysql
 import pandas as pd
-import aiosmtplib
+import smtplib
 
 # local libraries
 from local_settings import *
 from initialize_mysql import *
 
-
 warnings.filterwarnings("ignore")
 
 MAX_CONCURRENCY = 3
 
-# Instantiate the semaphore
-sem = asyncio.Semaphore(MAX_CONCURRENCY)
-
-async def long_sleep_with_heartbeat(total_sleep_time, heartbeat_interval):
+def long_sleep_with_heartbeat(total_sleep_time, heartbeat_interval):
     intervals = total_sleep_time // heartbeat_interval
     for _ in range(intervals):
-        await asyncio.sleep(heartbeat_interval)
+        time.sleep(heartbeat_interval)
         logging.info(f"Heartbeat")
     remaining_time = total_sleep_time % heartbeat_interval
     if remaining_time > 0:
-        await asyncio.sleep(remaining_time)
+        time.sleep(remaining_time)
 
 def run_query(mysql_conn, query, data=None):
     with mysql_conn.cursor() as cursor:
@@ -41,89 +36,80 @@ def run_query(mysql_conn, query, data=None):
         else:
             cursor.execute(query)
 
+def fetch(url):
+    response = requests.get(url)
+    return response.text
 
-async def fetch(session, url):
-    async with session.get(url) as response:
-        return await response.text()
-
-
-async def api_and_email_task(sem, cityID, city_name, dateFact, tomorrow, delay_seconds, recipients):
+def api_and_email_task(sem, cityID, city_name, dateFact, tomorrow, delay_seconds, recipients):
     # Acquire the semaphore
-    async with sem:
-        logging.info(f"starting async function `api_and_email_task` for {city_name}")
+    with sem:
+        logging.info(f"starting function `api_and_email_task` for {city_name}")
         logging.info(f"Entering timer of {delay_seconds} seconds")
-        # await asyncio.sleep(delay_seconds)
-        await long_sleep_with_heartbeat(delay_seconds, 60)
+        long_sleep_with_heartbeat(delay_seconds, 60)
         logging.info(f"Exiting timer of {delay_seconds} seconds")
 
-        async with aiohttp.ClientSession() as session:
-            url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
-            curr_r = await fetch(session, url)
-            curr_obj = json.loads(curr_r)  # Parse the response as JSON
+        session = requests.Session()
 
-            today_weather = "-".join([curr_obj["weather"][0]["main"], curr_obj["weather"][0]["description"]])
+        url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
+        curr_r = fetch(url)
+        curr_obj = json.loads(curr_r)
 
-            today_max_degrees_F = int((float(curr_obj["main"]["temp_max"]) * (9 / 5)) - 459.67)
+        today_weather = "-".join([curr_obj["weather"][0]["main"], curr_obj["weather"][0]["description"]])
+        today_max_degrees_F = int((float(curr_obj["main"]["temp_max"]) * (9 / 5)) - 459.67)
 
-            url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
-            forecast_r = await fetch(session, url)
-            forecast_obj = json.loads(forecast_r)  # Parse the response as JSON
+        url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
+        forecast_r = fetch(url)
+        forecast_obj = json.loads(forecast_r)
 
-            tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == tomorrow]
-            tomorrow_max_degrees_F = int(
-                (float(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs])) * (9 / 5)) - 459.67
-            )
+        tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == tomorrow]
+        tomorrow_max_degrees_F = int(
+            (float(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs])) * (9 / 5)) - 459.67
+        )
 
-            query = "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES (%s, %s, %s, %s, %s)"
-            data = (cityID, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F)
-            run_query(mysql_conn, query, data)
-            logging.info("updated klaviyo.tblactCityWeather")
+        query = "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES (%s, %s, %s, %s, %s)"
+        data = (cityID, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F)
+        run_query(mysql_conn, query, data)
+        logging.info("updated klaviyo.tblactCityWeather")
 
-            # Weather conditions and email subject/gifs
-            precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
-            sunny_words = ["sunny", "clear"]
-            if any(x in today_weather for x in sunny_words):
-                logging.info("sunny")
-                subject_value = "It's nice out! Enjoy a discount on us."
-                gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
-            elif today_max_degrees_F >= tomorrow_max_degrees_F + 5:
-                logging.info("warm")
-                subject_value = "It's nice out! Enjoy a discount on us."
-                gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
-            elif any(x in today_weather for x in precipitation_words):
-                logging.info("precipitation")
-                subject_value = "Not so nice out? That's okay, enjoy a discount on us."
-                gif_link = "https://media.giphy.com/media/1hM7Uh46ixnsWRMA7w/giphy.gif"
-            elif today_max_degrees_F + 5 <= tomorrow_max_degrees_F:
-                logging.info("cold")
-                subject_value = "Not so nice out? That's okay, enjoy a discount on us."
-                gif_link = "https://media.giphy.com/media/26FLdaDQ5f72FPbEI/giphy.gif"
-            else:
-                logging.info("other")
-                subject_value = "Enjoy a discount on us."
-                gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
+        precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
+        sunny_words = ["sunny", "clear"]
+        if any(x in today_weather for x in sunny_words):
+            logging.info("sunny")
+            subject_value = "It's nice out! Enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
+        elif today_max_degrees_F >= tomorrow_max_degrees_F + 5:
+            logging.info("warm")
+            subject_value = "It's nice out! Enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
+        elif any(x in today_weather for x in precipitation_words):
+            logging.info("precipitation")
+            subject_value = "Not so nice out? That's okay, enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/1hM7Uh46ixnsWRMA7w/giphy.gif"
+        elif today_max_degrees_F + 5 <= tomorrow_max_degrees_F:
+            logging.info("cold")
+            subject_value = "Not so nice out? That's okay, enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/26FLdaDQ5f72FPbEI/giphy.gif"
+        else:
+            logging.info("other")
+            subject_value = "Enjoy a discount on us."
+            gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
 
-            for recipient in recipients:
-                message = MIMEMultipart()
-                message["From"] = GMAIL_AUTH['mail_username']
-                message["To"] = recipient
-                message["Subject"] = Header(subject_value, 'utf-8')
-                message.attach(MIMEText(f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='640' height='480'>", "html"))
+        for recipient in recipients:
+            message = MIMEMultipart()
+            message["From"] = GMAIL_AUTH['mail_username']
+            message["To"] = recipient
+            message["Subject"] = Header(subject_value, 'utf-8')
+            message.attach(MIMEText(f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='640' height='480'>", "html"))
 
-                await aiosmtplib.send(
-                    message,
-                    hostname=GMAIL_AUTH['mail_server'],
-                    port=587,
-                    username=GMAIL_AUTH['mail_username'],
-                    password=GMAIL_AUTH['mail_password'],
-                    use_tls=False,
-                )
+            with smtplib.SMTP(GMAIL_AUTH['mail_server'], 587) as server:
+                server.starttls()
+                server.login(GMAIL_AUTH['mail_username'], GMAIL_AUTH['mail_password'])
+                server.send_message(message)
                 logging.info(f"Sent email to {recipient}")
 
-            logging.info(f"finished async function `api_and_email_task` for {city_name}")
+        logging.info(f"finished function `api_and_email_task` for {city_name}")
 
-
-async def main():
+def main():
     tasks = []
     tz = pytz.timezone("US/Pacific")
     logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
@@ -137,11 +123,10 @@ async def main():
 
     dateFact = (datetime.now() + timedelta(1)).strftime("%Y-%m-%d")
     tomorrow = (datetime.now() + timedelta(2)).strftime("%Y-%m-%d")
-    
+
     logging.info("------------------------------------------------------------------------")
     logging.info("------------------------------------------------------------------------")
-    
-    
+
     logging.info(f"dateFact = {dateFact}")
     logging.info(f"tomorrow = {tomorrow}")
 
@@ -166,7 +151,6 @@ async def main():
         city_name = city_dict[str(cityID)]
         _delay_seconds.append(int(city_dict_nested[cityID]["u_offset_seconds"]))
 
-    # sort by delay seconds ascending to allow concurrent tasks to finish efficiently
     tblDimEmailCity['delay_seconds'] = _delay_seconds
     tblDimEmailCity_sorted = tblDimEmailCity.sort_values('delay_seconds')
 
@@ -177,15 +161,10 @@ async def main():
         delay_seconds = int(city_dict_nested[cityID]["u_offset_seconds"])
         logging.info(f"cityID={str(cityID)}, city_name={city_name}")
 
-        task = asyncio.create_task(
-            api_and_email_task(sem, cityID, city_name, dateFact, tomorrow, delay_seconds, recipients)
-        )
-        tasks.append(task)
+        api_and_email_task(sem, cityID, city_name, dateFact, tomorrow, delay_seconds, recipients)
 
-    await asyncio.gather(*tasks)
     logging.info("------------------------------------------------------------------------")
     logging.info("------------------------------------------------------------------------")
-
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
