@@ -53,7 +53,7 @@ async def api_and_email_task(sem, cityID, city_name, dateFact, tomorrow, delay_s
         logging.info(f"starting async function `api_and_email_task` for {city_name}")
         logging.info(f"Entering timer of {delay_seconds} seconds")
         # await asyncio.sleep(delay_seconds)
-        asyncio.run(long_sleep_with_heartbeat(delay_seconds, 60))
+        await long_sleep_with_heartbeat(delay_seconds, 60)
         logging.info(f"Exiting timer of {delay_seconds} seconds")
 
         async with aiohttp.ClientSession() as session:
