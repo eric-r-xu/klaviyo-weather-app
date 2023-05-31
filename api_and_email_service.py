@@ -57,7 +57,7 @@ def api_and_email_task(
     )
     target_timestamp = target_time.timestamp()
 
-
+    """
     # use tomorrow if today already passed
     if local_timestamp > target_timestamp:
         target_time = datetime(
@@ -68,16 +68,16 @@ def api_and_email_task(
             LOCAL_TIME_MINUTE,
             0,
             tzinfo=tz,
-        )
+        )"""
     
-    logging.info(f"local_timestamp = {local_timestamp}, target_timestamp = {target_timestamp} ")
+    logging.info(f"city_name = {city_name}, local_timestamp = {local_timestamp}, target_timestamp = {target_timestamp} ")
 
     # do not api and email until scheduled time has passed
     while local_timestamp < target_timestamp:
         # check criterion every 30 seconds
         time.sleep(30)
         local_timestamp = datetime.now(tz).timestamp()
-        logging.info(f"local_timestamp = {local_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-local_timestamp)}")
+        logging.info(f"city_name = {city_name}; local_timestamp = {local_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-local_timestamp)}")
 
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     curr_r = fetch(url)
@@ -165,7 +165,7 @@ def main():
     
     
     logging.basicConfig(
-        filename="/logs/api_and_async_email.log",
+        filename="/logs/api_and_email_service.log",
         format="%(asctime)s %(levelname)s: %(message)s",
         level=logging.INFO,
         datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
