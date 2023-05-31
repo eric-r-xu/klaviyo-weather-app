@@ -215,12 +215,13 @@ def main():
             try:
                 # Get the current UTC time
                 _now_utc = datetime.now(pytz.UTC)
+                now_utc = _now_utc.replace(tzinfo=None)
 
                 # Create the timezone
                 _timezone = pytz.timezone(_tz_value)
 
                 # Localize the time
-                _localized_time = _timezone.localize(_now_utc)
+                _localized_time = _timezone.localize(now_utc)
 
                 # Get the UTC offset in seconds
                 _utc_offset_seconds_value = _localized_time.utcoffset().total_seconds()
