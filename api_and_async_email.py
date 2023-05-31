@@ -77,7 +77,7 @@ def api_and_email_task(
         # check criterion every 30 seconds
         time.sleep(30)
         local_timestamp = datetime.now(tz).timestamp()
-        logging.info(f"current_timestamp = {current_timestamp}; target_time = {target_timestamp}; seconds left = {target_timestamp-current_timestamp}")
+        logging.info(f"current_timestamp = {current_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-current_timestamp)}")
 
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     curr_r = fetch(url)
