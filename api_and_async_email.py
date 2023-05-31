@@ -154,25 +154,25 @@ def main():
     tz = pytz.timezone("US/Pacific")
     logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
 
+    dateFact = (datetime.now() + timedelta(1)).strftime("%Y-%m-%d")
+    tomorrow = (datetime.now() + timedelta(2)).strftime("%Y-%m-%d")
+    log_path = f"/logs/api_and_async_email_{dateFact}.log"
+    
+    logging.info(
+        "------------------------------------------------------------------------"
+    )
+    logging.info(
+        "------------------------------------------------------------------------"
+    )
+    
+    logging.info(f"dateFact = {dateFact}, tomorrow = {tomorrow}, log_path = {log_path}")
+    
     logging.basicConfig(
-        filename="/logs/api_and_async_email_20230530.log",
+        filename=log_path,
         format="%(asctime)s %(levelname)s: %(message)s",
         level=logging.INFO,
         datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
     )
-
-    logging.info(
-        "------------------------------------------------------------------------"
-    )
-    logging.info(
-        "------------------------------------------------------------------------"
-    )
-
-    dateFact = (datetime.now() + timedelta(1)).strftime("%Y-%m-%d")
-    tomorrow = (datetime.now() + timedelta(2)).strftime("%Y-%m-%d")
-
-    logging.info(f"dateFact = {dateFact}")
-    logging.info(f"tomorrow = {tomorrow}")
 
     mysql_conn = getSQLConn(
         MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"]
@@ -220,10 +220,10 @@ def main():
                 # Get the UTC offset in seconds
                 _utc_offset_seconds_value = _localized_time.utcoffset().total_seconds()
                 _utc_offset_seconds.append(_utc_offset_seconds_value)
-            except:
-                logging.error(f"utc offset seconds calculation error for {lat} {lon} at timezone {_tz_value} with error {e}")
-        except Exception as e:
-            logging.error(f"TimezoneFinder error for {lat} {lon} with error {e}")
+            except Exception as e1:
+                logging.error(f"utc offset seconds calculation error for {lat} {lon} at timezone {_tz_value} with error {e1}")
+        except Exception as e2:
+            logging.error(f"TimezoneFinder error for {lat} {lon} with error {e2}")
         
 
     tblDimEmailCity["tz"] = _tz
