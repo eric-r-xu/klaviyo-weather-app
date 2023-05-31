@@ -199,6 +199,7 @@ def main():
     tf = TimezoneFinder()
     _tz = []
     _utc_offset_seconds = []
+
     for row in tblDimEmailCity.itertuples(index=True, name="Pandas"):
         cityID = getattr(row, "city_id")
         city_name = city_dict[str(cityID)]
@@ -206,25 +207,31 @@ def main():
         lon = city_dict_nested[cityID]["lon"]
         try:
             _tz_value = tf.timezone_at(lng=lon, lat=lat)
+            if _tz_value is None: 
+                logging.error(f"No timezone found for {lat} {lon}")
+                continue
             _tz.append(_tz_value)
             logging.info(f"found {_tz_value} as timezone for {lat} {lon}")
             try:
                 # Get the current UTC time
                 _now_utc = datetime.now(pytz.UTC)
-                
+
                 # Create the timezone
                 _timezone = pytz.timezone(_tz_value)
-                
+
                 # Localize the time
                 _localized_time = _timezone.localize(_now_utc)
 
                 # Get the UTC offset in seconds
                 _utc_offset_seconds_value = _localized_time.utcoffset().total_seconds()
                 _utc_offset_seconds.append(_utc_offset_seconds_value)
-            except:
-                logging.error(f"utc offset seconds calculation error for {lat} {lon} at timezone {_tz_value}")
-        except:
-            logging.error(f"TimezoneFinder error for {lat} {lon}")
+            except pytz.UnknownTimeZoneError:
+                logging.error(f"Unknown timezone {_tz_value} for {lat} {lon}")
+            except Exception as e:
+                logging.error(f"utc offset seconds calculation error for {lat} {lon} at timezone {_tz_value}. Error: {str(e)}")
+        except Exception as e:
+            logging.error(f"TimezoneFinder error for {lat} {lon}. Error: {str(e)}")
+
         
 
     tblDimEmailCity["tz"] = _tz
