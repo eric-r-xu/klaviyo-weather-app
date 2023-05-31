@@ -157,6 +157,14 @@ def main():
     dateFact = (datetime.now() + timedelta(1)).strftime("%Y-%m-%d")
     tomorrow = (datetime.now() + timedelta(2)).strftime("%Y-%m-%d")
     
+    
+    logging.basicConfig(
+        filename="/logs/api_and_async_email.log",
+        format="%(asctime)s %(levelname)s: %(message)s",
+        level=logging.INFO,
+        datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
+    )
+    
     logging.info(
         "------------------------------------------------------------------------"
     )
@@ -166,12 +174,6 @@ def main():
     
     logging.info(f"dateFact = {dateFact}, tomorrow = {tomorrow}")
     
-    logging.basicConfig(
-        filename="/logs/api_and_async_email.log",
-        format="%(asctime)s %(levelname)s: %(message)s",
-        level=logging.INFO,
-        datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
-    )
 
     mysql_conn = getSQLConn(
         MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"]
