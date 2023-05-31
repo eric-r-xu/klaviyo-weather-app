@@ -77,7 +77,7 @@ def api_and_email_task(
         # check criterion every 30 seconds
         time.sleep(30)
         local_timestamp = datetime.now(tz).timestamp()
-        logging.info(f"current_timestamp = {current_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-current_timestamp)}")
+        logging.info(f"local_timestamp = {local_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-local_timestamp)}")
 
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     curr_r = fetch(url)
@@ -87,6 +87,7 @@ def api_and_email_task(
         [curr_obj["weather"][0]["main"], curr_obj["weather"][0]["description"]]
     )
     today_max_degrees_F = int((float(curr_obj["main"]["temp_max"]) * (9 / 5)) - 459.67)
+    logging.info(f"today_weather = {today_weather}; today_max_degrees_F = {today_max_degrees_F}")
 
     url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     forecast_r = fetch(url)
@@ -97,6 +98,7 @@ def api_and_email_task(
         (float(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs])) * (9 / 5))
         - 459.67
     )
+    logging.info(f"tomorrow_max_degrees_F = {tomorrow_max_degrees_F}")
 
     query = "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES (%s, %s, %s, %s, %s)"
     data = (
@@ -113,23 +115,23 @@ def api_and_email_task(
     sunny_words = ["sunny", "clear"]
     if any(x in today_weather for x in sunny_words):
         logging.info("sunny")
-        subject_value = "It's nice out! Enjoy a discount on us."
+        subject_value = f"WEATHER APP: It's nice out in {city_name}!"
         gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
     elif today_max_degrees_F >= tomorrow_max_degrees_F + 5:
         logging.info("warm")
-        subject_value = "It's nice out! Enjoy a discount on us."
+        subject_value = f"WEATHER APP: It's nice out in {city_name}!"
         gif_link = "https://media.giphy.com/media/nYiHd4Mh3w6fS/giphy.gif"
     elif any(x in today_weather for x in precipitation_words):
         logging.info("precipitation")
-        subject_value = "Not so nice out? That's okay, enjoy a discount on us."
+        subject_value = f"WEATHER APP: Not so nice out in {city_name}? That's okay."
         gif_link = "https://media.giphy.com/media/1hM7Uh46ixnsWRMA7w/giphy.gif"
     elif today_max_degrees_F + 5 <= tomorrow_max_degrees_F:
         logging.info("cold")
-        subject_value = "Not so nice out? That's okay, enjoy a discount on us."
+        subject_value = f"WEATHER APP: Not so nice out in {city_name}? That's okay."
         gif_link = "https://media.giphy.com/media/26FLdaDQ5f72FPbEI/giphy.gif"
     else:
         logging.info("other")
-        subject_value = "Enjoy a discount on us."
+        subject_value = f"WEATHER APP: {city_name}"
         gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
 
     for recipient in recipients:
