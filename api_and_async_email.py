@@ -42,39 +42,42 @@ def api_and_email_task(
     cityID, city_name, dateFact, tomorrow, recipients, local_tz, utc_offset_seconds
 ):
     logging.info(f"starting function `api_and_email_task` for {city_name}")
-
-    local_time = datetime.now(local_tz)
-    target_local_time = datetime(
-        local_time.year,
-        local_time.month,
-        local_time.day,
+    
+    tz = pytz.timezone(local_tz)
+    local_time = datetime.now(tz)
+    local_timestamp = local_time.timestamp()
+    target_time = datetime(
+        int(dateFact[0:4]),
+        int(dateFact[5:7]),
+        int(dateFact[8:10]),
         LOCAL_TIME_HOUR,
         LOCAL_TIME_MINUTE,
         0,
-        tzinfo=local_tz,
+        tzinfo=tz,
     )
+    target_timestamp = target_time.timestamp()
 
 
     # use tomorrow if today already passed
-    if local_time > target_time:
-        tomorrow = now + timedelta(days=1)
-        local_time = datetime.tomorrow(local_tz)
+    if local_timestamp > target_timestamp:
         target_time = datetime(
-            local_time.year,
-            local_time.month,
-            local_time.day,
+            int(tomorrow[0:4]),
+            int(tomorrow[5:7]),
+            int(tomorrow[8:10]),
             LOCAL_TIME_HOUR,
             LOCAL_TIME_MINUTE,
             0,
-            tzinfo=local_tz,
+            tzinfo=tz,
         )
+    
+    logging.info(f"local_timestamp = {local_timestamp}, target_timestamp = {target_timestamp} ")
 
-    # do not run until scheduled time
-    while local_time < target_time:
-        # heartbeat every 2 minutes
-        time.sleep(120)
-        logging.info(f"current_time = {current_time} target_time = {target_time}")
-        local_time = datetime.now(local_tz)
+    # do not api and email until scheduled time has passed
+    while local_timestamp < target_timestamp:
+        # check criterion every 30 seconds
+        time.sleep(30)
+        local_timestamp = datetime.now(tz).timestamp()
+        logging.info(f"current_timestamp = {current_timestamp}; target_time = {target_timestamp}; seconds left = {target_timestamp-current_timestamp}")
 
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     curr_r = fetch(url)
@@ -151,6 +154,7 @@ def api_and_email_task(
 
 
 def main():
+    # ensure logging is in US pacific time
     tz = pytz.timezone("US/Pacific")
     logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
 
