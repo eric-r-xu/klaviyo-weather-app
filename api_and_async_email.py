@@ -248,16 +248,10 @@ def main():
             local_tz,
             utc_offset_seconds,
         )
+    logging.info('made it to the bitter end!')
 
     
 
 
 if __name__ == "__main__":
     main()
-    logging.info("made it to the bitter end!")
-    logging.info(
-        "------------------------------------------------------------------------"
-    )
-    logging.info(
-        "------------------------------------------------------------------------"
-    )
