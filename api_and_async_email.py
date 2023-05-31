@@ -196,7 +196,8 @@ def main():
     )
 
     tf = TimezoneFinder()
-    _tz = [], _utc_offset_seconds = []
+    _tz = []
+    _utc_offset_seconds = []
     for row in tblDimEmailCity.itertuples(index=True, name="Pandas"):
         cityID = getattr(row, "city_id")
         city_name = city_dict[str(cityID)]
