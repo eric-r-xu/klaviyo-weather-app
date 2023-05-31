@@ -205,13 +205,25 @@ def main():
         lon = city_dict_nested[cityID]["lon"]
         try:
             _tz_value = tf.timezone_at(lng=lon, lat=lat)
-            _tz_offset_seconds_value = int(
-                ((tf.timezone(tz)).localize(now)).utcoffset().total_seconds()
-            )
             _tz.append(_tz_value)
-            _utc_offset_seconds.append(_tz_offset_seconds_value)
+            logging.info(f"found {_tz_value} as timezone for {lat} {lon}")
+            try:
+                # Get the current UTC time
+                _now_utc = datetime.now(pytz.UTC)
+                
+                # Create the timezone
+                _timezone = pytz.timezone(_tz_value)
+                
+                # Localize the time
+                _localized_time = _timezone.localize(_now_utc)
+
+                # Get the UTC offset in seconds
+                _utc_offset_seconds_value = _localized_time.utcoffset().total_seconds()
+                _utc_offset_seconds.append(_utc_offset_seconds_value)
+            except:
+                logging.error(f"utc offset seconds calculation error for {lat} {lon} at timezone {_tz_value} with error {e}")
         except Exception as e:
-            logging.error(f"TimezoneFinder error for {lat} {lon} with {e}")
+            logging.error(f"TimezoneFinder error for {lat} {lon} with error {e}")
         
 
     tblDimEmailCity["tz"] = _tz
