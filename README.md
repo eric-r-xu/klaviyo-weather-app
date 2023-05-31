@@ -1,6 +1,5 @@
 # [klaviyo-weather-app](https://www.klaviyo.com/)
-Email web subscription service that makes weather based marketing emails for the top 100 most populated US cities (and a few more).
-### [ranked US city population list](https://en.wikipedia.org/wiki/List_of_United_States_cities_by_population)
+Email web subscription service that makes weather based marketing emails for worldwide cities 
 
 ### web application deployment directions
 #### Deployed on Ubuntu 22.04 (LTS) x64 Digital Ocean droplet with git version 2.17.1, Python 3.10.6, & MySQL 5.7.41 
