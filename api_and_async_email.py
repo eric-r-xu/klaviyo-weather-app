@@ -206,7 +206,7 @@ def main():
         try:
             _tz_value = tf.timezone_at(lng=lon, lat=lat)
             _tz_offset_seconds_value = int(
-                ((tf.timezone(_tz_value)).localize(now)).utcoffset().total_seconds()
+                ((tf.timezone(tz)).localize(now)).utcoffset().total_seconds()
             )
         except Exception as e:
             logging.error(f"TimezoneFinder error for {lat} {lon} with {e}")
