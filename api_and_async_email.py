@@ -69,6 +69,7 @@ def api_and_email_task(
             tzinfo=local_tz,
         )
 
+    # do not run until scheduled time
     while local_time < target_time:
         # heart every 2 minutes
         time.sleep(120)
@@ -203,13 +204,13 @@ def main():
         lon = city_dict_nested[cityID]["lon"]
         try:
             _tz_value = tf.timezone_at(lng=lon, lat=lat)
-            _tz_offset_seconds = int(
+            _tz_offset_seconds_value = int(
                 ((tf.timezone(_tz_value)).localize(now)).utcoffset().total_seconds()
             )
         except Exception as e:
             logging.error(f"TimezoneFinder error for {lat} {lon} with {e}")
         _tz.append(_tz_value)
-        __utc_offset_seconds.append(__utc_offset_seconds_value)
+        _utc_offset_seconds.append(_tz_offset_seconds_value)
 
     tblDimEmailCity["tz"] = _tz
     tblDimEmailCity["utc_offset_seconds"] = _utc_offset_seconds
