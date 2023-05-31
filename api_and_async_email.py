@@ -156,7 +156,6 @@ def main():
 
     dateFact = (datetime.now() + timedelta(1)).strftime("%Y-%m-%d")
     tomorrow = (datetime.now() + timedelta(2)).strftime("%Y-%m-%d")
-    log_path = f"/logs/api_and_async_email_{dateFact}.log"
     
     logging.info(
         "------------------------------------------------------------------------"
@@ -168,7 +167,7 @@ def main():
     logging.info(f"dateFact = {dateFact}, tomorrow = {tomorrow}, log_path = {log_path}")
     
     logging.basicConfig(
-        filename=log_path,
+        filename="/logs/api_and_async_email_all.log",
         format="%(asctime)s %(levelname)s: %(message)s",
         level=logging.INFO,
         datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
