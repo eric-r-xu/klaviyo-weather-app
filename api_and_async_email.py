@@ -164,7 +164,7 @@ def main():
         "------------------------------------------------------------------------"
     )
     
-    logging.info(f"dateFact = {dateFact}, tomorrow = {tomorrow}, log_path = {log_path}")
+    logging.info(f"dateFact = {dateFact}, tomorrow = {tomorrow}")
     
     logging.basicConfig(
         filename="/logs/api_and_async_email_all.log",
