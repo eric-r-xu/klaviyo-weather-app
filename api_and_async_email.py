@@ -219,10 +219,10 @@ def main():
                 # Get the UTC offset in seconds
                 _utc_offset_seconds_value = _localized_time.utcoffset().total_seconds()
                 _utc_offset_seconds.append(_utc_offset_seconds_value)
-            except Exception as e1:
-                logging.error(f"utc offset seconds calculation error for {lat} {lon} at timezone {_tz_value} with error {e1}")
-        except Exception as e2:
-            logging.error(f"TimezoneFinder error for {lat} {lon} with error {e2}")
+            except:
+                logging.error(f"utc offset seconds calculation error for {lat} {lon} at timezone {_tz_value}")
+        except:
+            logging.error(f"TimezoneFinder error for {lat} {lon}")
         
 
     tblDimEmailCity["tz"] = _tz
