@@ -208,10 +208,11 @@ def main():
             _tz_offset_seconds_value = int(
                 ((tf.timezone(tz)).localize(now)).utcoffset().total_seconds()
             )
+            _tz.append(_tz_value)
+            _utc_offset_seconds.append(_tz_offset_seconds_value)
         except Exception as e:
             logging.error(f"TimezoneFinder error for {lat} {lon} with {e}")
-        _tz.append(_tz_value)
-        _utc_offset_seconds.append(_tz_offset_seconds_value)
+        
 
     tblDimEmailCity["tz"] = _tz
     tblDimEmailCity["utc_offset_seconds"] = _utc_offset_seconds
