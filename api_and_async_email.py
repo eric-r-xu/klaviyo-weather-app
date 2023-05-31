@@ -71,7 +71,7 @@ def api_and_email_task(
 
     # do not run until scheduled time
     while local_time < target_time:
-        # heart every 2 minutes
+        # heartbeat every 2 minutes
         time.sleep(120)
         logging.info(f"current_time = {current_time} target_time = {target_time}")
         local_time = datetime.now(local_tz)
@@ -167,7 +167,7 @@ def main():
     logging.info(f"dateFact = {dateFact}, tomorrow = {tomorrow}")
     
     logging.basicConfig(
-        filename="/logs/api_and_async_email_all.log",
+        filename="/logs/api_and_async_email.log",
         format="%(asctime)s %(levelname)s: %(message)s",
         level=logging.INFO,
         datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
