@@ -44,7 +44,7 @@ def api_and_email_task(
     logging.info(f"starting function `api_and_email_task` for {city_name}")
 
     local_time = datetime.now(local_tz)
-    target_time = datetime(
+    target_local_time = datetime(
         local_time.year,
         local_time.month,
         local_time.day,
@@ -54,7 +54,6 @@ def api_and_email_task(
         tzinfo=local_tz,
     )
 
-    tomorrow = now + timedelta(days=1)
 
     # use tomorrow if today already passed
     if local_time > target_time:
@@ -70,11 +69,11 @@ def api_and_email_task(
             tzinfo=local_tz,
         )
 
-    while current_time < target_time:
+    while local_time < target_time:
         # heart every 2 minutes
         time.sleep(120)
         logging.info(f"current_time = {current_time} target_time = {target_time}")
-        current_time = datetime.now(local_tz)
+        local_time = datetime.now(local_tz)
 
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     curr_r = fetch(url)
@@ -236,14 +235,15 @@ def main():
             utc_offset_seconds,
         )
 
-    logging.info(
-        "------------------------------------------------------------------------"
-    )
-    logging.info(
-        "------------------------------------------------------------------------"
-    )
+    
 
 
 if __name__ == "__main__":
     main()
     logging.info("made it to the bitter end!")
+    logging.info(
+        "------------------------------------------------------------------------"
+    )
+    logging.info(
+        "------------------------------------------------------------------------"
+    )
