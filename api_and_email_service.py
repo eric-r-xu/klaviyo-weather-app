@@ -32,7 +32,9 @@ def log_memory_usage():
     total_memory = psutil.virtual_memory().total
     memory_used_percentage = (mem_info.rss / total_memory) * 100
     # rss is the Resident Set Size and is used to show the portion of the process's memory held in RAM
-    logging.info(f'Memory used: {mem_info.rss}, Percentage of total memory: {memory_used_percentage}%')  
+    return logging.info(
+        f"Memory used: {mem_info.rss}, Percentage of total memory: {memory_used_percentage}%"
+    )
 
 
 def run_query(mysql_conn, query, data=None):
@@ -52,7 +54,7 @@ def api_and_email_task(
     cityID, city_name, dateFact, tomorrow, recipients, local_tz, utc_offset_seconds
 ):
     logging.info(f"starting function `api_and_email_task` for {city_name}")
-    
+
     tz = pytz.timezone(local_tz)
     local_time = datetime.now(tz)
     local_timestamp = local_time.timestamp()
@@ -79,15 +81,19 @@ def api_and_email_task(
             0,
             tzinfo=tz,
         )"""
-    
-    logging.info(f"city_name = {city_name}, local_timestamp = {local_timestamp}, target_timestamp = {target_timestamp} ")
+
+    logging.info(
+        f"city_name = {city_name}, local_timestamp = {local_timestamp}, target_timestamp = {target_timestamp} "
+    )
 
     # do not api and email until scheduled time has passed
     while local_timestamp < target_timestamp:
         # check criterion every 30 seconds
         time.sleep(30)
         local_timestamp = datetime.now(tz).timestamp()
-        logging.info(f"{city_name}; local_timestamp = {local_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-local_timestamp)}")
+        logging.info(
+            f"{city_name}; local_timestamp = {local_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-local_timestamp)}"
+        )
         process = psutil.Process(os.getpid())
         log_memory_usage()
 
@@ -99,7 +105,9 @@ def api_and_email_task(
         [curr_obj["weather"][0]["main"], curr_obj["weather"][0]["description"]]
     )
     today_max_degrees_F = int((float(curr_obj["main"]["temp_max"]) * (9 / 5)) - 459.67)
-    logging.info(f"today_weather = {today_weather}; today_max_degrees_F = {today_max_degrees_F}")
+    logging.info(
+        f"today_weather = {today_weather}; today_max_degrees_F = {today_max_degrees_F}"
+    )
 
     url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     forecast_r = fetch(url)
@@ -174,24 +182,22 @@ def main():
 
     dateFact = (datetime.now() + timedelta(1)).strftime("%Y-%m-%d")
     tomorrow = (datetime.now() + timedelta(2)).strftime("%Y-%m-%d")
-    
-    
+
     logging.basicConfig(
         filename="/logs/api_and_email_service.log",
         format="%(asctime)s %(levelname)s: %(message)s",
         level=logging.INFO,
         datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
     )
-    
+
     logging.info(
         "------------------------------------------------------------------------"
     )
     logging.info(
         "------------------------------------------------------------------------"
     )
-    
+
     logging.info(f"dateFact = {dateFact}, tomorrow = {tomorrow}")
-    
 
     mysql_conn = getSQLConn(
         MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"]
@@ -225,7 +231,7 @@ def main():
         lon = city_dict_nested[cityID]["lon"]
         try:
             _tz_value = tf.timezone_at(lng=lon, lat=lat)
-            if _tz_value is None: 
+            if _tz_value is None:
                 logging.error(f"No timezone found for {lat} {lon}")
                 continue
             _tz.append(_tz_value)
@@ -247,11 +253,11 @@ def main():
             except pytz.UnknownTimeZoneError:
                 logging.error(f"Unknown timezone {_tz_value} for {lat} {lon}")
             except Exception as e:
-                logging.error(f"utc offset seconds calculation error for {lat} {lon} at timezone {_tz_value}. Error: {str(e)}")
+                logging.error(
+                    f"utc offset seconds calculation error for {lat} {lon} at timezone {_tz_value}. Error: {str(e)}"
+                )
         except Exception as e:
             logging.error(f"TimezoneFinder error for {lat} {lon}. Error: {str(e)}")
-
-
 
     tblDimEmailCity["tz"] = _tz
     tblDimEmailCity["utc_offset_seconds"] = _utc_offset_seconds
@@ -276,9 +282,7 @@ def main():
             local_tz,
             utc_offset_seconds,
         )
-    logging.info('made it to the bitter end!')
-
-    
+    logging.info("made it to the bitter end!")
 
 
 if __name__ == "__main__":
