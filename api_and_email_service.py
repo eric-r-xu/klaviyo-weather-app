@@ -27,11 +27,12 @@ LOCAL_TIME_HOUR = 7
 LOCAL_TIME_MINUTE = 58
 
 
-# show the process's memory held in RAM
 def log_memory_usage():
-    process = psutil.Process(os.getpid())
     mem_info = process.memory_info()
-    logging.info(f'Memory used: {mem_info.rss}')  # rss = Resident Set Size 
+    total_memory = psutil.virtual_memory().total
+    memory_used_percentage = (mem_info.rss / total_memory) * 100
+    # rss is the Resident Set Size and is used to show the portion of the process's memory held in RAM
+    logging.info(f'Memory used: {mem_info.rss}, Percentage of total memory: {memory_used_percentage}%')  
 
 
 def run_query(mysql_conn, query, data=None):
@@ -87,6 +88,7 @@ def api_and_email_task(
         time.sleep(30)
         local_timestamp = datetime.now(tz).timestamp()
         logging.info(f"{city_name}; local_timestamp = {local_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-local_timestamp)}")
+        process = psutil.Process(os.getpid())
         log_memory_usage()
 
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
