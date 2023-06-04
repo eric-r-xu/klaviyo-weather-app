@@ -26,6 +26,7 @@ warnings.filterwarnings("ignore")
 LOCAL_TIME_HOUR = 7
 LOCAL_TIME_MINUTE = 58
 
+process = psutil.Process(os.getpid())
 
 def log_memory_usage():
     mem_info = process.memory_info()
@@ -92,7 +93,7 @@ def api_and_email_task(
         time.sleep(30)
         local_timestamp = datetime.now(tz).timestamp()
         logging.info(
-            f"{city_name}; local_timestamp = {local_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-local_timestamp)}"
+            f"{city_name}; seconds left = {int(target_timestamp-local_timestamp)}"
         )
         process = psutil.Process(os.getpid())
         log_memory_usage()
