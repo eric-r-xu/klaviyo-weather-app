@@ -17,6 +17,7 @@ import os
 import psutil
 from timezonefinder import TimezoneFinder
 import time
+import threading
 
 # local libraries
 from local_settings import *
@@ -35,6 +36,11 @@ async def garbage_collection():
     while True:
         gc.collect()
         await asyncio.sleep(1800)  # Sleep for 1800 seconds, or 30 minutes
+
+
+def run_garbage_collection():
+    asyncio.run(garbage_collection())
+
 
 def log_memory_usage():
     mem_info = process.memory_info()
@@ -184,7 +190,7 @@ def api_and_email_task(
     logging.info(f"finished function `api_and_email_task` for {city_name}")
 
 
-async def main():
+def main():
     # ensure logging is in US pacific time
     tz = pytz.timezone("US/Pacific")
     logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
@@ -294,4 +300,9 @@ async def main():
     logging.info("made it to the bitter end!")
 
 
-asyncio.run(asyncio.gather(main(), garbage_collection()))
+# Run main() in the main thread
+main()
+
+# Run garbage_collection() in a different thread
+gc_thread = threading.Thread(target=run_garbage_collection)
+gc_thread.start()
