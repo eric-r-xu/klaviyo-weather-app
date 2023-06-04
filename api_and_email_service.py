@@ -7,6 +7,8 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
 import requests
+import asyncio
+import gc
 import pytz
 import pymysql
 import pandas as pd
@@ -28,13 +30,19 @@ LOCAL_TIME_MINUTE = 58
 
 process = psutil.Process(os.getpid())
 
+
+async def garbage_collection():
+    while True:
+        gc.collect()
+        await asyncio.sleep(1800)  # Sleep for 1800 seconds, or 30 minutes
+
 def log_memory_usage():
     mem_info = process.memory_info()
     total_memory = psutil.virtual_memory().total
     memory_used_percentage = (mem_info.rss / total_memory) * 100
     # rss is the Resident Set Size and is used to show the portion of the process's memory held in RAM
     return logging.info(
-        f"Memory used: {mem_info.rss}, Percentage of total memory: {memory_used_percentage}%"
+        f"Memory used: {mem_info.rss}, Percentage of total memory: {round(memory_used_percentage,2)}%"
     )
 
 
@@ -84,7 +92,7 @@ def api_and_email_task(
         )"""
 
     logging.info(
-        f"city_name = {city_name}, local_timestamp = {local_timestamp}, target_timestamp = {target_timestamp} "
+        f"city_name = {city_name}, local_time = {local_time}, target_time = {target_time} "
     )
 
     # do not api and email until scheduled time has passed
@@ -176,7 +184,7 @@ def api_and_email_task(
     logging.info(f"finished function `api_and_email_task` for {city_name}")
 
 
-def main():
+async def main():
     # ensure logging is in US pacific time
     tz = pytz.timezone("US/Pacific")
     logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
@@ -286,5 +294,4 @@ def main():
     logging.info("made it to the bitter end!")
 
 
-if __name__ == "__main__":
-    main()
+asyncio.run(asyncio.gather(main(), garbage_collection()))
