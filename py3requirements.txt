@@ -1,4 +1,5 @@
 Flask
+psutil
 flask-mysqldb
 DateTime
 Flask-Limiter
