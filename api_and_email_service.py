@@ -11,6 +11,8 @@ import pytz
 import pymysql
 import pandas as pd
 import smtplib
+import os
+import psutil
 from timezonefinder import TimezoneFinder
 import time
 
@@ -23,6 +25,13 @@ warnings.filterwarnings("ignore")
 # run at 7:58 AM local time
 LOCAL_TIME_HOUR = 7
 LOCAL_TIME_MINUTE = 58
+
+
+# show the process's memory held in RAM
+def log_memory_usage():
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    logging.info(f'Memory used: {mem_info.rss}')  # rss = Resident Set Size 
 
 
 def run_query(mysql_conn, query, data=None):
@@ -77,7 +86,8 @@ def api_and_email_task(
         # check criterion every 30 seconds
         time.sleep(30)
         local_timestamp = datetime.now(tz).timestamp()
-        logging.info(f"city_name = {city_name}; local_timestamp = {local_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-local_timestamp)}")
+        logging.info(f"{city_name}; local_timestamp = {local_timestamp}; target_time = {target_timestamp}; seconds left = {(target_timestamp-local_timestamp)}")
+        log_memory_usage()
 
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     curr_r = fetch(url)
@@ -239,7 +249,7 @@ def main():
         except Exception as e:
             logging.error(f"TimezoneFinder error for {lat} {lon}. Error: {str(e)}")
 
-        
+
 
     tblDimEmailCity["tz"] = _tz
     tblDimEmailCity["utc_offset_seconds"] = _utc_offset_seconds
