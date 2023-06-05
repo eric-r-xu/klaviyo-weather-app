@@ -64,7 +64,7 @@ class WeatherAPI:
 
         # call current weather api for city
         url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
-        curr_r = fetch(url)
+        curr_r = self.fetch(url)
         curr_obj = json.loads(curr_r)
 
         today_weather = "-".join(
@@ -164,6 +164,7 @@ class WeatherAPI:
 
 
     def main(self):
+        engine = create_engine("mysql+pymysql://%s:%s@%s/klaviyo" % (MYSQL_AUTH["user"], MYSQL_AUTH["password"],MYSQL_AUTH["host"]))
         dateFact = datetime.now(tz).strftime("%Y-%m-%d")
         dateFact_hour = datetime.now(tz).hour + 1
         logging.info(
@@ -180,7 +181,7 @@ class WeatherAPI:
 
         tblDimEmailCity = pd.read_sql_query(
             """SELECT group_concat(convert(email,char)) AS email_set, city_id FROM klaviyo.tblDimEmailCity group by city_id""",
-            con=mysql_conn,
+            con=engine,
         )
         logging.info('tblDimEmailCity')
         logging.info(tblDimEmailCity.to_string())
