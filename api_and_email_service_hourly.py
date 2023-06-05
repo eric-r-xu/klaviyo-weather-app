@@ -43,6 +43,7 @@ class WeatherAPI:
                 cursor.execute(query, data)
             else:
                 cursor.execute(query)
+            query = cursor.mogrify(query, data)
 
     def fetch(self, url):
         response = requests.get(url)
