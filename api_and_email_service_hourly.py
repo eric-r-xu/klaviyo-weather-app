@@ -62,7 +62,7 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
 
     # call current weather api for city
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
-    curr_r = fetch(url)
+    curr_r = self.fetch(url)
     curr_obj = json.loads(curr_r)
 
     today_weather = "-".join(
@@ -75,7 +75,7 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
 
     # call forecast weather api for city
     url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
-    forecast_r = fetch(url)
+    forecast_r = self.fetch(url)
     forecast_obj = json.loads(forecast_r)
 
     tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == local_tomorrow]
@@ -86,7 +86,7 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
     logging.info(f"{city_name}: tomorrow_max_degrees_F = {tomorrow_max_degrees_F}")
     
     query = f"DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
-    run_query(mysql_conn, query)
+    self.run_query(query)
     logging.info(
         f"successfully finished DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
     )
@@ -153,7 +153,7 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
 
     # purge subscriptions for city older than 10 days from sign_up_date
     query = f"DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
-    run_query(mysql_conn, query)
+    self.run_query(query)
     logging.info(
         f"finished {query}"
     )
