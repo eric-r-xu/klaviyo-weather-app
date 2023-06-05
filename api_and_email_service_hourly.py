@@ -133,7 +133,7 @@ class WeatherAPI:
             message["Subject"] = Header(subject_value, "utf-8")
             message.attach(
                 MIMEText(
-                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}'> subscription will expire in 10 days from {str(expiration_date)[0:10]}",
+                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}'> expires {str(expiration_date)[0:10]}",
                     "html",
                 )
             )
