@@ -37,13 +37,9 @@ class WeatherAPI:
     def __init__(self, engine):
         self.engine = engine
 
-    def run_query(self, query, data=None):
+    def run_query(self, query):
         with self.engine.connect() as connection:
-            if data:
-                statement = text(query).bindparams(**data)
-                connection.execute(statement)
-            else:
-                connection.execute(text(query))
+            connection.execute(text(query))
 
     def fetch(self, url):
         response = requests.get(url)
@@ -95,15 +91,8 @@ class WeatherAPI:
             f"successfully finished DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
         )
 
-        query = "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES (%s, %s, %s, %s, %s)"
-        data = (
-            cityID,
-            local_dateFact,
-            today_weather,
-            today_max_degrees_F,
-            tomorrow_max_degrees_F,
-        )
-        self.run_query(mysql_conn, query, data)
+        query = f"INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES ({cityID}, '{local_dateFact}', '{today_weather}', {today_max_degrees_F}, {tomorrow_max_degrees_F})"
+        self.run_query(mysql_conn, query)
         logging.info(f"successfully finished INSERT INTO klaviyo.tblFactCityWeather({str(cityID)}, {str(local_dateFact)}, {str(today_weather)}, {str(today_max_degrees_F)}, {str(tomorrow_max_degrees_F)})")
 
         precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
