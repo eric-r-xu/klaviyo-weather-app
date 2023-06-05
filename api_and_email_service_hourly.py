@@ -6,6 +6,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
 import requests
+import json
 import pytz
 import pymysql
 import pandas as pd
@@ -152,6 +153,12 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
 def main():
     dateFact = datetime.now(tz).strftime("%Y-%m-%d")
     dateFact_hour = datetime.now(tz).hour + 1
+    logging.info(
+        "------------------------------------------------------------------------"
+    )
+    logging.info(
+        "------------------------------------------------------------------------"
+    )
     logging.info(f"Starting api_and_email_service_hourly.py for {dateFact} and hour = {str(dateFact_hour)}")
 
     mysql_conn = getSQLConn(
@@ -222,7 +229,7 @@ def main():
             recipients,
             local_tz
         )
-    logging.info(f"finished api_and_email_service_hourly.py for {run_date_hour}")
+    logging.info(f"Finished api_and_email_service_hourly.py for {dateFact} and hour = {str(dateFact_hour)}")
     logging.info(
         "------------------------------------------------------------------------"
     )
