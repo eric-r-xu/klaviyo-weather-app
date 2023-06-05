@@ -128,13 +128,13 @@ class WeatherAPI:
             gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
 
         for recipient in recipients:
-            sign_up_date_df = pd.read_sql_query(
-                f"SELECT sign_up_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
+            expiration_df = pd.read_sql_query(
+                f"SELECT date_sub(sign_up_date, interval -10 day) AS expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
                 con=mysql_conn,
             )
             
-            for row in sign_up_date_df.itertuples(index=True, name="Pandas"):
-                sign_up_date = getattr(row, "sign_up_date")
+            for row in expiration_df.itertuples(index=True, name="Pandas"):
+                expiration_date = getattr(row, "expiration_date")
                 
             message = MIMEMultipart()
             message["From"] = GMAIL_AUTH["mail_username"]
@@ -142,10 +142,11 @@ class WeatherAPI:
             message["Subject"] = Header(subject_value, "utf-8")
             message.attach(
                 MIMEText(
-                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' <br><br> subscription will expire in 10 days from {sign_up_date}  width='640' height='480'>",
+                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}'> subscription will expire in 10 days from {str(expiration_date)[0:10]}",
                     "html",
                 )
             )
+
 
             with smtplib.SMTP(GMAIL_AUTH["mail_server"], 587) as server:
                 server.starttls()
