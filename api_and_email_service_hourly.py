@@ -89,7 +89,7 @@ class WeatherAPI:
         logging.info(f"{city_name}: tomorrow_max_degrees_F = {tomorrow_max_degrees_F}")
         
         query = f"DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
-        run_query(mysql_conn, query)
+        self.run_query(mysql_conn, query)
         logging.info(
             f"successfully finished DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
         )
@@ -102,7 +102,7 @@ class WeatherAPI:
             today_max_degrees_F,
             tomorrow_max_degrees_F,
         )
-        run_query(mysql_conn, query, data)
+        self.run_query(mysql_conn, query, data)
         logging.info(f"successfully finished INSERT INTO klaviyo.tblFactCityWeather({str(cityID)}, {str(local_dateFact)}, {str(today_weather)}, {str(today_max_degrees_F)}, {str(tomorrow_max_degrees_F)})")
 
         precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
@@ -157,7 +157,7 @@ class WeatherAPI:
 
         # purge subscriptions for city older than 10 days from sign_up_date
         query = f"DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
-        run_query(mysql_conn, query)
+        self.run_query(mysql_conn, query)
         logging.info(
             f"finished {query}"
         )
