@@ -49,7 +49,7 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
     _local_tz = pytz.timezone(local_tz)
     local_time = datetime.now(_local_tz)
     local_dateFact = local_time.strftime("%Y-%m-%d")
-    local_tomorrow = str(local_time + timedelta(days=1)).strftime("%Y-%m-%d")
+    local_tomorrow = str(local_time + timedelta(days=1).strftime("%Y-%m-%d"))
     local_hour = local_time.hour + 1
 
     logging.info(f"Starting `api_and_email_task` for {city_name} at {local_time}")
