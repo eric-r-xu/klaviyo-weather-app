@@ -238,7 +238,7 @@ class WeatherAPI:
                 f"cityID={str(cityID)}, city_name={city_name}, local_tz={local_tz}, utc_offset_seconds={utc_offset_seconds}"
             )
 
-            api_and_email_task(
+            self.api_and_email_task(
                 cityID,
                 city_name,
                 recipients,
