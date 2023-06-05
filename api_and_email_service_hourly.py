@@ -40,7 +40,8 @@ class WeatherAPI:
     def run_query(self, query, data=None):
         with self.engine.connect() as connection:
             if data:
-                connection.execute(text(query), data)
+                statement = text(query).bindparams(**data)
+                connection.execute(statement)
             else:
                 connection.execute(text(query))
 
