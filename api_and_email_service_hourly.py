@@ -25,10 +25,10 @@ from initialize_mysql import *
 
 warnings.filterwarnings("ignore")
 
-# run at 7:58 AM local time
-LOCAL_TIME_HOUR = 7
-LOCAL_TIME_MINUTE = 58
+# run API and email at 8 AM local hour
+LOCAL_TIME_HOUR = 8
 
+# get process id for async garbage collection to prevent memory leaks
 process = psutil.Process(os.getpid())
 
 
@@ -66,45 +66,25 @@ def fetch(url):
 
 
 def api_and_email_task(
-    cityID, city_name, dateFact, tomorrow, recipients, local_tz, utc_offset_seconds
+    cityID, city_name, recipients, local_tz, utc_offset_seconds
 ):
-    logging.info(f"starting function `api_and_email_task` for {city_name}")
-
-    tz = pytz.timezone(local_tz)
-    local_time = datetime.now(tz)
-    local_timestamp = local_time.timestamp()
-    target_time = datetime(
-        int(dateFact[0:4]),
-        int(dateFact[5:7]),
-        int(dateFact[8:10]),
-        LOCAL_TIME_HOUR,
-        LOCAL_TIME_MINUTE,
-        0,
-        tzinfo=tz,
-    )
-    target_timestamp = target_time.timestamp()
-
-    logging.info(
-        f"city_name = {city_name}, local_time = {local_time}, target_time = {target_time} "
-    )
-
+    _local_tz = pytz.timezone(local_tz)
+    local_time = datetime.now(_local_tz)
+    local_tomorrow = str(local_time + timedelta(days=1)).strftime("%Y-%m-%d")
+    local_dateFact = str(local_time.strftime("%Y-%m-%d"))
+    local_hour = local_time.hour + 1
+    local_dateFact_hour = local_dateFact + ' ' + str(local_hour)
+    
+    logging.info(f"starting function `api_and_email_task` for {city_name} with local date hour {local_dateFact_hour} and local tomorrow {local_tomorrow}")
+    logging.info(f"{city_name} has local time = {str(local_time)}")
+    
     # script runs hourly, so skipping cities not within hour
-    if abs(int(target_timestamp - local_timestamp)) > 3600:
+    if local_hour != LOCAL_TIME_HOUR
         return logging.info(
-            f"skipping function `api_and_email_task` for {city_name} since it does not fall within hour to run"
+            f"skipping function `api_and_email_task` for {city_name} since local hour local_hour = {local_hour} is not LOCAL_TIME_HOUR = {LOCAL_TIME_HOUR}"
         )
 
-    # do not api and email until scheduled time has passed
-    while local_timestamp < target_timestamp:
-        # check criterion every minute
-        time.sleep(60)
-        local_timestamp = datetime.now(tz).timestamp()
-        logging.info(
-            f"{city_name}; seconds left = {int(target_timestamp-local_timestamp)}"
-        )
-        process = psutil.Process(os.getpid())
-        log_memory_usage()
-
+    # call current weather api for city
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     curr_r = fetch(url)
     curr_obj = json.loads(curr_r)
@@ -114,30 +94,37 @@ def api_and_email_task(
     )
     today_max_degrees_F = int((float(curr_obj["main"]["temp_max"]) * (9 / 5)) - 459.67)
     logging.info(
-        f"today_weather = {today_weather}; today_max_degrees_F = {today_max_degrees_F}"
+        f"{city_name}: today_weather = {today_weather}; {city_name} today_max_degrees_F = {today_max_degrees_F}"
     )
 
+    # call forecast weather api for city
     url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
     forecast_r = fetch(url)
     forecast_obj = json.loads(forecast_r)
 
-    tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == tomorrow]
+    tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == local_tomorrow]
     tomorrow_max_degrees_F = int(
         (float(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs])) * (9 / 5))
         - 459.67
     )
-    logging.info(f"tomorrow_max_degrees_F = {tomorrow_max_degrees_F}")
+    logging.info(f"{city_name}: tomorrow_max_degrees_F = {tomorrow_max_degrees_F}")
+    
+    query = f"DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
+    run_query(mysql_conn, query)
+    logging.info(
+        f"successfully finished DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
+    )
 
     query = "INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES (%s, %s, %s, %s, %s)"
     data = (
         cityID,
-        dateFact,
+        local_dateFact,
         today_weather,
         today_max_degrees_F,
         tomorrow_max_degrees_F,
     )
     run_query(mysql_conn, query, data)
-    logging.info("updated klaviyo.tblactCityWeather")
+    logging.info(f"successfully finished INSERT INTO klaviyo.tblFactCityWeather({str(cityID)}, {str(local_dateFact)}, {str(today_weather)}, {str(today_max_degrees_F)}, {str(tomorrow_max_degrees_F)})")
 
     precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
     sunny_words = ["sunny", "clear"]
@@ -180,17 +167,21 @@ def api_and_email_task(
             server.send_message(message)
             logging.info(f"Sent email to {recipient}")
 
+        query = f"DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
+        run_query(mysql_conn, query)
+        logging.info(
+            f"finished {query}"
+        )
     return logging.info(f"finished function `api_and_email_task` for {city_name}")
 
 
 def main():
-    # ensure logging is in US pacific time
+    # logging is in US pacific time
     tz = pytz.timezone("US/Pacific")
     logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
-
-    dateFact = (datetime.now() + timedelta(1)).strftime("%Y-%m-%d")
-    tomorrow = (datetime.now() + timedelta(2)).strftime("%Y-%m-%d")
-
+    dateFact = str((datetime.now(tz)).strftime("%Y-%m-%d"))
+    run_date_hour = dateFact + ' ' + str((datetime.now(tz)).strftime("%Y-%m-%d").hour + 1)
+    
     logging.basicConfig(
         filename="/logs/api_and_email_service_hourly.log",
         format="%(asctime)s %(levelname)s: %(message)s",
@@ -204,23 +195,11 @@ def main():
     logging.info(
         "------------------------------------------------------------------------"
     )
-
-    logging.info(f"dateFact = {dateFact}, tomorrow = {tomorrow}")
+    
+    logging.info(f"starting api_and_email_service_hourly.py for {run_date_hour}")
 
     mysql_conn = getSQLConn(
         MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"]
-    )
-
-    query = f"""DELETE from klaviyo.tblFactCityWeather where dateFact<date_sub(CURRENT_DATE, interval 60 day) or dateFact=CURRENT_DATE or dateFact='{dateFact}' """
-    run_query(mysql_conn, query)
-    logging.info(
-        "finished purging weather data today and older than 60 days from klaviyo.tblFactCityWeather"
-    )
-
-    query = """DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub(CURRENT_DATE, interval 10 day) """
-    run_query(mysql_conn, query)
-    logging.info(
-        "finished purging data older than 10 days from klaviyo.tblDimEmailCity"
     )
 
     tblDimEmailCity = pd.read_sql_query(
@@ -284,13 +263,17 @@ def main():
         api_and_email_task(
             cityID,
             city_name,
-            dateFact,
-            tomorrow,
             recipients,
             local_tz,
             utc_offset_seconds,
         )
-    logging.info("finished main thread")
+    logging.info(f"finished api_and_email_service_hourly.py for {run_date_hour}")
+    logging.info(
+        "------------------------------------------------------------------------"
+    )
+    logging.info(
+        "------------------------------------------------------------------------"
+    )
 
 
 # Run main() in the main thread
