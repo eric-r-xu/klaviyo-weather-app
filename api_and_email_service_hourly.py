@@ -222,6 +222,7 @@ def main():
         local_tz = getattr(row, "tz")
         utc_offset_seconds = getattr(row, "utc_offset_seconds")
         city_name = city_dict[str(cityID)]
+        logging.info(" ")
         logging.info(
             f"cityID={str(cityID)}, city_name={city_name}, local_tz={local_tz}, utc_offset_seconds={utc_offset_seconds}"
         )
@@ -232,6 +233,7 @@ def main():
             recipients,
             local_tz
         )
+        logging.info(" ")
     logging.info(f"Finished api_and_email_service_hourly.py for {dateFact} and hour = {str(dateFact_hour)}")
     logging.info(
         "------------------------------------------------------------------------"
