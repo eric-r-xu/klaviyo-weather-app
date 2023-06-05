@@ -126,13 +126,21 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
         gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
 
     for recipient in recipients:
+        sign_up_date_df = pd.read_sql_query(
+            f"SELECT sign_up_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
+            con=mysql_conn,
+        )
+        
+        for row in sign_up_date_df.itertuples(index=True, name="Pandas"):
+            sign_up_date = getattr(row, "sign_up_date")
+            
         message = MIMEMultipart()
         message["From"] = GMAIL_AUTH["mail_username"]
         message["To"] = recipient
         message["Subject"] = Header(subject_value, "utf-8")
         message.attach(
             MIMEText(
-                f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='640' height='480'>",
+                f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' <br><br> subscription will expire in 10 days from {sign_up_date}  width='640' height='480'>",
                 "html",
             )
         )
@@ -143,11 +151,12 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
             server.send_message(message)
             logging.info(f"Sent email to {recipient}")
 
-        query = f"DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
-        run_query(mysql_conn, query)
-        logging.info(
-            f"finished {query}"
-        )
+    # purge subscriptions for city older than 10 days from sign_up_date
+    query = f"DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
+    run_query(mysql_conn, query)
+    logging.info(
+        f"finished {query}"
+    )
     return logging.info(f"finished function `api_and_email_task` for {city_name}")
 
 
@@ -172,6 +181,8 @@ def main():
         """SELECT group_concat(convert(email,char)) AS email_set, city_id FROM klaviyo.tblDimEmailCity group by city_id""",
         con=mysql_conn,
     )
+    logging.info('tblDimEmailCity')
+    logging.info(tblDimEmailCity.to_string())
 
     tf = TimezoneFinder()
     _tz = []
