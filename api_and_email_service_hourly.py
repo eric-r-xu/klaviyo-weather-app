@@ -34,16 +34,15 @@ LOCAL_TIME_HOUR = 8
 
 
 class WeatherAPI:
-    def __init__(self, mysql_conn):
-        self.mysql_conn = mysql_conn
+    def __init__(self, engine):
+        self.engine = engine
 
     def run_query(self, query, data=None):
-        with self.mysql_conn.cursor() as cursor:
+        with self.engine.connect() as connection:
             if data:
-                cursor.execute(query, data)
+                connection.execute(text(query), data)
             else:
-                cursor.execute(query)
-            query = cursor.mogrify(query, data)
+                connection.execute(text(query))
 
     def fetch(self, url):
         response = requests.get(url)
@@ -177,9 +176,6 @@ class WeatherAPI:
         )
         logging.info(f"Starting api_and_email_service_hourly.py for {dateFact} and hour = {str(dateFact_hour)}")
 
-        mysql_conn = getSQLConn(
-            MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"]
-        )
 
         tblDimEmailCity = pd.read_sql_query(
             """SELECT group_concat(convert(email,char)) AS email_set, city_id FROM klaviyo.tblDimEmailCity group by city_id""",
@@ -259,8 +255,6 @@ class WeatherAPI:
 
 
 if __name__ == "__main__":
-    mysql_conn = getSQLConn(
-        MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"]
-    )
-    weather_api = WeatherAPI(mysql_conn)
+    engine = create_engine("mysql+pymysql://%s:%s@%s/klaviyo" % (MYSQL_AUTH["user"], MYSQL_AUTH["password"],MYSQL_AUTH["host"]))
+    weather_api = WeatherAPI(engine)
     weather_api.main()
