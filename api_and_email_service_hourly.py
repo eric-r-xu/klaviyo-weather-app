@@ -151,7 +151,8 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
 
 def main():
     dateFact = datetime.now(tz).strftime("%Y-%m-%d")
-    logging.info(f"Starting api_and_email_service_hourly.py for {dateFact}")
+    dateFact_hour = datetime.now(tz).hour + 1
+    logging.info(f"Starting api_and_email_service_hourly.py for {dateFact} and hour = {str(dateFact_hour)}")
 
     mysql_conn = getSQLConn(
         MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"]
@@ -219,8 +220,7 @@ def main():
             cityID,
             city_name,
             recipients,
-            local_tz,
-            utc_offset_seconds,
+            local_tz
         )
     logging.info(f"finished api_and_email_service_hourly.py for {run_date_hour}")
     logging.info(
