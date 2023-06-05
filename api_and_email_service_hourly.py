@@ -84,27 +84,20 @@ def api_and_email_task(
     )
     target_timestamp = target_time.timestamp()
 
-    """
-    # use tomorrow if today already passed
-    if local_timestamp > target_timestamp:
-        target_time = datetime(
-            int(tomorrow[0:4]),
-            int(tomorrow[5:7]),
-            int(tomorrow[8:10]),
-            LOCAL_TIME_HOUR,
-            LOCAL_TIME_MINUTE,
-            0,
-            tzinfo=tz,
-        )"""
-
     logging.info(
         f"city_name = {city_name}, local_time = {local_time}, target_time = {target_time} "
     )
 
+    # script runs hourly, so skipping cities not within hour
+    if abs(int(target_timestamp - local_timestamp)) > 3600:
+        return logging.info(
+            f"skipping function `api_and_email_task` for {city_name} since it does not fall within hour to run"
+        )
+
     # do not api and email until scheduled time has passed
     while local_timestamp < target_timestamp:
-        # check criterion every 30 seconds
-        time.sleep(30)
+        # check criterion every minute
+        time.sleep(60)
         local_timestamp = datetime.now(tz).timestamp()
         logging.info(
             f"{city_name}; seconds left = {int(target_timestamp-local_timestamp)}"
@@ -187,7 +180,7 @@ def api_and_email_task(
             server.send_message(message)
             logging.info(f"Sent email to {recipient}")
 
-    logging.info(f"finished function `api_and_email_task` for {city_name}")
+    return logging.info(f"finished function `api_and_email_task` for {city_name}")
 
 
 def main():
@@ -199,7 +192,7 @@ def main():
     tomorrow = (datetime.now() + timedelta(2)).strftime("%Y-%m-%d")
 
     logging.basicConfig(
-        filename="/logs/api_and_email_service.log",
+        filename="/logs/api_and_email_service_hourly.log",
         format="%(asctime)s %(levelname)s: %(message)s",
         level=logging.INFO,
         datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
@@ -297,7 +290,7 @@ def main():
             local_tz,
             utc_offset_seconds,
         )
-    logging.info("made it to the bitter end!")
+    logging.info("finished main thread")
 
 
 # Run main() in the main thread
