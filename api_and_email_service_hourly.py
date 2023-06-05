@@ -127,12 +127,12 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
 
     for recipient in recipients:
         sign_up_date_df = pd.read_sql_query(
-            f"SELECT sign_up_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
+            f"SELECT date_sub(sign_up_date, interval -10 day) as expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
             con=mysql_conn,
         )
         
         for row in sign_up_date_df.itertuples(index=True, name="Pandas"):
-            sign_up_date = getattr(row, "sign_up_date")
+            expiration_date = getattr(row, "expiration_date")
             
         message = MIMEMultipart()
         message["From"] = GMAIL_AUTH["mail_username"]
@@ -140,7 +140,7 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
         message["Subject"] = Header(subject_value, "utf-8")
         message.attach(
             MIMEText(
-                f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' <br><br> subscription will expire in 10 days from {sign_up_date}  width='640' height='480'>",
+                f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br> emails expire {expiration_date} <br><br><br><img src='{gif_link}' <br><br> width='640' height='480'>",
                 "html",
             )
         )
