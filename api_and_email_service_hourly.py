@@ -49,13 +49,16 @@ def api_and_email_task(cityID, city_name, recipients, local_tz):
     _local_tz = pytz.timezone(local_tz)
     local_time = datetime.now(_local_tz)
     local_dateFact = local_time.strftime("%Y-%m-%d")
-    local_hour = local_time.hour
+    local_tomorrow = str(local_time + timedelta(days=1)).strftime("%Y-%m-%d")
+    local_hour = local_time.hour + 1
 
     logging.info(f"Starting `api_and_email_task` for {city_name} at {local_time}")
 
     if local_hour != LOCAL_TIME_HOUR:
         logging.info(f"Skipping `api_and_email_task` for {city_name} since local hour {local_hour} != {LOCAL_TIME_HOUR}")
         return
+    else:
+        logging.info('proceeding')
 
     # call current weather api for city
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
