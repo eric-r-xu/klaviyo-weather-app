@@ -1,55 +1,34 @@
-# libraries
+# Python standard library
 import logging
-import warnings
-import json
 from datetime import timedelta, datetime
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.header import Header
 import requests
-import asyncio
-import gc
 import pytz
 import pymysql
 import pandas as pd
 import smtplib
-import os
-import psutil
 from timezonefinder import TimezoneFinder
-import time
-import threading
 
-# local libraries
+# Local libraries
 from local_settings import *
 from initialize_mysql import *
 
-warnings.filterwarnings("ignore")
+logging.basicConfig(
+    filename="/logs/api_and_email_service_hourly.log",
+    format="%(asctime)s %(levelname)s: %(message)s",
+    level=logging.INFO,
+    datefmt=f"%Y-%m-%d %H:%M:%S ({pytz.timezone('US/Pacific')})",
+)
 
-# run API and email at 8 AM local hour
+# Configure timezone
+tz = pytz.timezone("US/Pacific")
+logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
+
+# Run API and email at 8 AM local hour
 LOCAL_TIME_HOUR = 8
-
-# get process id for async garbage collection to prevent memory leaks
-process = psutil.Process(os.getpid())
-
-
-async def garbage_collection():
-    while True:
-        gc.collect()
-        await asyncio.sleep(1800)  # Sleep for 1800 seconds, or 30 minutes
-
-
-def run_garbage_collection():
-    asyncio.run(garbage_collection())
-
-
-def log_memory_usage():
-    mem_info = process.memory_info()
-    total_memory = psutil.virtual_memory().total
-    memory_used_percentage = (mem_info.rss / total_memory) * 100
-    # rss is the Resident Set Size and is used to show the portion of the process's memory held in RAM
-    return logging.info(
-        f"Memory used: {mem_info.rss}, Percentage of total memory: {round(memory_used_percentage,2)}%"
-    )
 
 
 def run_query(mysql_conn, query, data=None):
@@ -65,24 +44,17 @@ def fetch(url):
     return response.text
 
 
-def api_and_email_task(
-    cityID, city_name, recipients, local_tz, utc_offset_seconds
-):
+def api_and_email_task(cityID, city_name, recipients, local_tz):
     _local_tz = pytz.timezone(local_tz)
     local_time = datetime.now(_local_tz)
-    local_tomorrow = str(local_time + timedelta(days=1)).strftime("%Y-%m-%d")
-    local_dateFact = str(local_time.strftime("%Y-%m-%d"))
-    local_hour = local_time.hour + 1
-    local_dateFact_hour = local_dateFact + ' ' + str(local_hour)
-    
-    logging.info(f"starting function `api_and_email_task` for {city_name} with local date hour {local_dateFact_hour} and local tomorrow {local_tomorrow}")
-    logging.info(f"{city_name} has local time = {str(local_time)}")
-    
-    # script runs hourly, so skipping cities not within hour
-    if local_hour != LOCAL_TIME_HOUR
-        return logging.info(
-            f"skipping function `api_and_email_task` for {city_name} since local hour local_hour = {local_hour} is not LOCAL_TIME_HOUR = {LOCAL_TIME_HOUR}"
-        )
+    local_dateFact = local_time.strftime("%Y-%m-%d")
+    local_hour = local_time.hour
+
+    logging.info(f"Starting `api_and_email_task` for {city_name} at {local_time}")
+
+    if local_hour != LOCAL_TIME_HOUR:
+        logging.info(f"Skipping `api_and_email_task` for {city_name} since local hour {local_hour} != {LOCAL_TIME_HOUR}")
+        return
 
     # call current weather api for city
     url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
@@ -175,28 +147,11 @@ def api_and_email_task(
     return logging.info(f"finished function `api_and_email_task` for {city_name}")
 
 
-def main():
-    # logging is in US pacific time
-    tz = pytz.timezone("US/Pacific")
-    logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
-    dateFact = str((datetime.now(tz)).strftime("%Y-%m-%d"))
-    run_date_hour = dateFact + ' ' + str((datetime.now(tz)).strftime("%Y-%m-%d").hour + 1)
-    
-    logging.basicConfig(
-        filename="/logs/api_and_email_service_hourly.log",
-        format="%(asctime)s %(levelname)s: %(message)s",
-        level=logging.INFO,
-        datefmt=f"%Y-%m-%d %H:%M:%S ({tz})",
-    )
 
-    logging.info(
-        "------------------------------------------------------------------------"
-    )
-    logging.info(
-        "------------------------------------------------------------------------"
-    )
-    
-    logging.info(f"starting api_and_email_service_hourly.py for {run_date_hour}")
+
+def main():
+    dateFact = datetime.now(tz).strftime("%Y-%m-%d")
+    logging.info(f"Starting api_and_email_service_hourly.py for {dateFact}")
 
     mysql_conn = getSQLConn(
         MYSQL_AUTH["host"], MYSQL_AUTH["user"], MYSQL_AUTH["password"]
@@ -276,9 +231,6 @@ def main():
     )
 
 
-# Run main() in the main thread
-main()
 
-# Run garbage_collection() in a different thread
-gc_thread = threading.Thread(target=run_garbage_collection)
-gc_thread.start()
+if __name__ == "__main__":
+    main()
