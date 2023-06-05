@@ -86,13 +86,13 @@ class WeatherAPI:
         logging.info(f"{city_name}: tomorrow_max_degrees_F = {tomorrow_max_degrees_F}")
         
         query = f"DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
-        self.run_query(mysql_conn, query)
+        self.run_query(query)
         logging.info(
             f"successfully finished DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
         )
 
         query = f"INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES ({cityID}, '{local_dateFact}', '{today_weather}', {today_max_degrees_F}, {tomorrow_max_degrees_F})"
-        self.run_query(mysql_conn, query)
+        self.run_query(query)
         logging.info(f"successfully finished INSERT INTO klaviyo.tblFactCityWeather({str(cityID)}, {str(local_dateFact)}, {str(today_weather)}, {str(today_max_degrees_F)}, {str(tomorrow_max_degrees_F)})")
 
         precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
@@ -121,7 +121,7 @@ class WeatherAPI:
         for recipient in recipients:
             expiration_df = pd.read_sql_query(
                 f"SELECT date_sub(sign_up_date, interval -10 day) AS expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
-                con=mysql_conn,
+                con=self.engine,
             )
             
             for row in expiration_df.itertuples(index=True, name="Pandas"):
@@ -147,7 +147,7 @@ class WeatherAPI:
 
         # purge subscriptions for city older than 10 days from sign_up_date
         query = f"DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
-        self.run_query(mysql_conn, query)
+        self.run_query(query)
         logging.info(
             f"finished {query}"
         )
@@ -155,7 +155,6 @@ class WeatherAPI:
 
 
     def main(self):
-        engine = create_engine("mysql+pymysql://%s:%s@%s/klaviyo" % (MYSQL_AUTH["user"], MYSQL_AUTH["password"],MYSQL_AUTH["host"]))
         dateFact = datetime.now(tz).strftime("%Y-%m-%d")
         dateFact_hour = datetime.now(tz).hour + 1
         logging.info(
