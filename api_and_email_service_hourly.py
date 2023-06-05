@@ -78,7 +78,7 @@ class WeatherAPI:
 
         # call forecast weather api for city
         url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
-        forecast_r = fetch(url)
+        forecast_r = self.fetch(url)
         forecast_obj = json.loads(forecast_r)
 
         tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == local_tomorrow]
@@ -238,7 +238,7 @@ class WeatherAPI:
             city_name = city_dict[str(cityID)]
             logging.info(" ")
             logging.info(
-                f"cityID={str(cityID)}, city_name={city_name}, local_tz={local_tz}, utc_offset_seconds={utc_offset_seconds}"
+                f"cityID={str(cityID)}, city_name={city_name}, local_tz={local_tz}, utc_offset_hours={round(utc_offset_seconds/3600.,1)}"
             )
 
             self.api_and_email_task(
