@@ -9,6 +9,7 @@ import requests
 import json
 import pytz
 import pymysql
+import keyring
 import pandas as pd
 from sqlalchemy import create_engine, text
 import smtplib
@@ -55,10 +56,12 @@ class WeatherAPI:
         logging.info(f"Starting `api_and_email_task` for {city_name} at {local_time}")
 
         if local_hour != LOCAL_TIME_HOUR:
-            logging.info(f"Skipping `api_and_email_task` for {city_name} since local hour {local_hour} != {LOCAL_TIME_HOUR}")
+            logging.info(
+                f"Skipping `api_and_email_task` for {city_name} since local hour {local_hour} != {LOCAL_TIME_HOUR}"
+            )
             return
         else:
-            logging.info('proceeding')
+            logging.info("proceeding")
 
         # call current weather api for city
         url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
@@ -68,7 +71,9 @@ class WeatherAPI:
         today_weather = "-".join(
             [curr_obj["weather"][0]["main"], curr_obj["weather"][0]["description"]]
         )
-        today_max_degrees_F = int((float(curr_obj["main"]["temp_max"]) * (9 / 5)) - 459.67)
+        today_max_degrees_F = int(
+            (float(curr_obj["main"]["temp_max"]) * (9 / 5)) - 459.67
+        )
         logging.info(
             f"{city_name}: today_weather = {today_weather}; {city_name} today_max_degrees_F = {today_max_degrees_F}"
         )
@@ -78,13 +83,18 @@ class WeatherAPI:
         forecast_r = self.fetch(url)
         forecast_obj = json.loads(forecast_r)
 
-        tmrw_objs = [x for x in forecast_obj["list"] if x["dt_txt"][0:10] == local_tomorrow]
+        tmrw_objs = [
+            x for x in forecast_obj["list"] if x["dt_txt"][0:10] == local_tomorrow
+        ]
         tomorrow_max_degrees_F = int(
-            (float(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs])) * (9 / 5))
+            (
+                float(max([tmrw_obj["main"]["temp_max"] for tmrw_obj in tmrw_objs]))
+                * (9 / 5)
+            )
             - 459.67
         )
         logging.info(f"{city_name}: tomorrow_max_degrees_F = {tomorrow_max_degrees_F}")
-        
+
         query = f"DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
         self.run_query(query)
         logging.info(
@@ -93,7 +103,9 @@ class WeatherAPI:
 
         query = f"INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES ({cityID}, '{local_dateFact}', '{today_weather}', {today_max_degrees_F}, {tomorrow_max_degrees_F})"
         self.run_query(query)
-        logging.info(f"successfully finished INSERT INTO klaviyo.tblFactCityWeather({str(cityID)}, {str(local_dateFact)}, {str(today_weather)}, {str(today_max_degrees_F)}, {str(tomorrow_max_degrees_F)})")
+        logging.info(
+            f"successfully finished INSERT INTO klaviyo.tblFactCityWeather({str(cityID)}, {str(local_dateFact)}, {str(today_weather)}, {str(today_max_degrees_F)}, {str(tomorrow_max_degrees_F)})"
+        )
 
         precipitation_words = ["mist", "rain", "sleet", "snow", "hail"]
         sunny_words = ["sunny", "clear"]
@@ -123,10 +135,10 @@ class WeatherAPI:
                 f"SELECT date_sub(sign_up_date, interval -10 day) AS expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
                 con=self.engine,
             )
-            
+
             for row in expiration_df.itertuples(index=True, name="Pandas"):
                 expiration_date = getattr(row, "expiration_date")
-                
+
             message = MIMEMultipart()
             message["From"] = GMAIL_AUTH["mail_username"]
             message["To"] = recipient
@@ -138,6 +150,12 @@ class WeatherAPI:
                 )
             )
 
+            message.attach(
+                MIMEText(
+                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='640' height='480'> <br><br> expires {str(expiration_date)[0:10]}",
+                    "html",
+                )
+            )
 
             with smtplib.SMTP(GMAIL_AUTH["mail_server"], 587) as server:
                 server.starttls()
@@ -148,11 +166,8 @@ class WeatherAPI:
         # purge subscriptions for city older than 10 days from sign_up_date
         query = f"DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
         self.run_query(query)
-        logging.info(
-            f"finished {query}"
-        )
+        logging.info(f"finished {query}")
         return logging.info(f"finished function `api_and_email_task` for {city_name}")
-
 
     def main(self):
         dateFact = datetime.now(tz).strftime("%Y-%m-%d")
@@ -163,14 +178,15 @@ class WeatherAPI:
         logging.info(
             "------------------------------------------------------------------------"
         )
-        logging.info(f"Starting api_and_email_service_hourly.py for {dateFact} and hour = {str(dateFact_hour)}")
-
+        logging.info(
+            f"Starting api_and_email_service_hourly.py for {dateFact} and hour = {str(dateFact_hour)}"
+        )
 
         tblDimEmailCity = pd.read_sql_query(
             """SELECT group_concat(convert(email,char)) AS email_set, city_id FROM klaviyo.tblDimEmailCity group by city_id""",
             con=engine,
         )
-        logging.info('tblDimEmailCity')
+        logging.info("tblDimEmailCity")
         logging.info(tblDimEmailCity.to_string())
 
         tf = TimezoneFinder()
@@ -201,7 +217,9 @@ class WeatherAPI:
                     _localized_time = _timezone.localize(now_utc)
 
                     # Get the UTC offset in seconds
-                    _utc_offset_seconds_value = _localized_time.utcoffset().total_seconds()
+                    _utc_offset_seconds_value = (
+                        _localized_time.utcoffset().total_seconds()
+                    )
                     _utc_offset_seconds.append(_utc_offset_seconds_value)
                 except pytz.UnknownTimeZoneError:
                     logging.error(f"Unknown timezone {_tz_value} for {lat} {lon}")
@@ -227,14 +245,11 @@ class WeatherAPI:
                 f"cityID={str(cityID)}, city_name={city_name}, local_tz={local_tz}, utc_offset_hours={round(utc_offset_seconds/3600.,1)}"
             )
 
-            self.api_and_email_task(
-                cityID,
-                city_name,
-                recipients,
-                local_tz
-            )
+            self.api_and_email_task(cityID, city_name, recipients, local_tz)
             logging.info(" ")
-        logging.info(f"Finished api_and_email_service_hourly.py for {dateFact} and hour = {str(dateFact_hour)}")
+        logging.info(
+            f"Finished api_and_email_service_hourly.py for {dateFact} and hour = {str(dateFact_hour)}"
+        )
         logging.info(
             "------------------------------------------------------------------------"
         )
@@ -244,6 +259,9 @@ class WeatherAPI:
 
 
 if __name__ == "__main__":
-    engine = create_engine("mysql+pymysql://%s:%s@%s/klaviyo" % (MYSQL_AUTH["user"], MYSQL_AUTH["password"],MYSQL_AUTH["host"]))
+    engine = create_engine(
+        "mysql+pymysql://%s:%s@%s/klaviyo"
+        % (MYSQL_AUTH["user"], MYSQL_AUTH["password"], MYSQL_AUTH["host"])
+    )
     weather_api = WeatherAPI(engine)
     weather_api.main()
