@@ -1,4 +1,3 @@
-# Python standard library
 import logging
 from datetime import timedelta, datetime
 import os
@@ -15,8 +14,6 @@ from sqlalchemy import create_engine, text
 import smtplib
 from timezonefinder import TimezoneFinder
 
-# Local libraries
-from local_settings import *
 from initialize_mysql import *
 
 logging.basicConfig(
@@ -33,8 +30,10 @@ logging.Formatter.converter = lambda *args: datetime.now(tz).timetuple()
 # Run API and email at 8 AM local hour
 LOCAL_TIME_HOUR = 8
 
+OPENWEATHERMAP_AUTH_api_key = keyring.get_password("OPENWEATHERMAP_AUTH", "api_key")
 
-class WeatherAPI:
+
+class ApiAndEmailServiceHourly:
     def __init__(self, engine):
         self.engine = engine
 
@@ -64,7 +63,7 @@ class WeatherAPI:
             logging.info("proceeding")
 
         # call current weather api for city
-        url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
+        url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH_api_key}"
         curr_r = self.fetch(url)
         curr_obj = json.loads(curr_r)
 
@@ -79,7 +78,7 @@ class WeatherAPI:
         )
 
         # call forecast weather api for city
-        url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH['api_key']}"
+        url = f"http://api.openweathermap.org/data/2.5/forecast?id={cityID}&appid={OPENWEATHERMAP_AUTH_api_key}"
         forecast_r = self.fetch(url)
         forecast_obj = json.loads(forecast_r)
 
@@ -151,9 +150,14 @@ class WeatherAPI:
                 )
             )
 
-            with smtplib.SMTP(GMAIL_AUTH["mail_server"], 587) as server:
+            with smtplib.SMTP(
+                keyring.get_password("GMAIL_AUTH", "mail_server"), 587
+            ) as server:
                 server.starttls()
-                server.login(GMAIL_AUTH["mail_username"], GMAIL_AUTH["mail_password"])
+                server.login(
+                    keyring.get_password("GMAIL_AUTH", "mail_username"),
+                    keyring.get_password("GMAIL_AUTH", "mail_password"),
+                )
                 server.send_message(message)
                 logging.info(f"Sent email to {recipient}")
 
@@ -255,7 +259,11 @@ class WeatherAPI:
 if __name__ == "__main__":
     engine = create_engine(
         "mysql+pymysql://%s:%s@%s/klaviyo"
-        % (MYSQL_AUTH["user"], MYSQL_AUTH["password"], MYSQL_AUTH["host"])
+        % (
+            keyring.get_password("MYSQL_AUTH", "user"),
+            keyring.get_password("MYSQL_AUTH", "password"),
+            keyring.get_password("MYSQL_AUTH", "host"),
+        )
     )
-    weather_api = WeatherAPI(engine)
+    weather_api = ApiAndEmailServiceHourly(engine)
     weather_api.main()
