@@ -143,16 +143,10 @@ class WeatherAPI:
             message["From"] = GMAIL_AUTH["mail_username"]
             message["To"] = recipient
             message["Subject"] = Header(subject_value, "utf-8")
-            message.attach(
-                MIMEText(
-                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}'> expires {str(expiration_date)[0:10]}",
-                    "html",
-                )
-            )
 
             message.attach(
                 MIMEText(
-                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='640' height='480'> <br><br> expires {str(expiration_date)[0:10]}",
+                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='300' height='300'> <br><br> expires {str(expiration_date)[0:10]}",
                     "html",
                 )
             )
