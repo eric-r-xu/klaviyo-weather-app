@@ -1,4 +1,4 @@
-id	city	state	country	lat	lon	u_offset_seconds
+id	name	state	country	lat	lon	u_offset_seconds
 3356343	Karasburg	//Karas	Namibia	-28.017	18.75	43200.0
 3358416	Bethanie	//Karas	Namibia	-26.483	17.15	43200.0
 3356264	Keetmanshoop	//Karas	Namibia	-26.583	18.133	43200.0
