@@ -95,10 +95,11 @@ class ApiAndEmailServiceHourly:
         logging.info(f"{city_name}: tomorrow_max_degrees_F = {tomorrow_max_degrees_F}")
 
         query = f"DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
-        self.run_query(query)
+        delete_output = self.run_query(query)
         logging.info(
-            f"successfully finished DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
+            f"successfully finished {query}"
         )
+        logging.info(f"{delete_output}")
 
         query = f"INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES ({cityID}, '{local_dateFact}', '{today_weather}', {today_max_degrees_F}, {tomorrow_max_degrees_F})"
         self.run_query(query)
@@ -163,8 +164,10 @@ class ApiAndEmailServiceHourly:
 
         # purge subscriptions for city older than 10 days from sign_up_date
         query = f"DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
-        self.run_query(query)
+ 
+        delete_output = self.run_query(query)
         logging.info(f"finished {query}")
+        logging.info(f"{delete_output}")
         return logging.info(f"finished function `api_and_email_task` for {city_name}")
 
     def main(self):
