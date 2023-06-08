@@ -145,13 +145,15 @@ class ApiAndEmailServiceHourly:
             gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
 
         for recipient in recipients:
+            logging.info('starting {recipient} ')
             expiration_df = pd.read_sql_query(
                 f"SELECT date_sub(sign_up_date, interval -10 day) AS expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
                 con=self.engine,
             )
 
             for row in expiration_df.itertuples(index=True, name="Pandas"):
-                expiration_date = getattr(row, "expiration_date")
+                expiration_datetime = getattr(row, "expiration_date")
+                expiration_date = str(expiration_date)[0:10]
 
             message = MIMEMultipart()
             message["From"] = GMAIL_AUTH["mail_username"]
@@ -160,7 +162,7 @@ class ApiAndEmailServiceHourly:
 
             message.attach(
                 MIMEText(
-                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='300' height='300'> <br><br> expires {str(expiration_date)[0:10]}",
+                    f"{city_name} - {today_max_degrees_F} degrees F - {today_weather} <br><br><img src='{gif_link}' width='300' height='300'> <br><br> expires {expiration_date}",
                     "html",
                 )
             )
@@ -176,26 +178,27 @@ class ApiAndEmailServiceHourly:
                 server.send_message(message)
                 logging.info(f"Sent email to {recipient}")
 
-        # purge subscriptions for city older than 10 days from sign_up_date
-        query = f"from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
-        delete_query = "DELETE " + query
-        query_output = "SELECT * " + query
-        query_df = pd.read_sql_query(
-            query_output,
-            con=self.engine,
-        )
-        logging.info("BEFORE DELETE")
-        logging.info(query_df.to_string())
+            # purge individual email city weather subscriptions older than 10 days from sign_up_date
+            query = f"from klaviyo.tblDimEmailCity where '{local_dateFact}'>= '{expiration_date}' and city_id={cityID} "
+            delete_query = "DELETE " + query
+            query_output = "SELECT * " + query
+            query_df = pd.read_sql_query(
+                query_output,
+                con=self.engine,
+            )
+            logging.info("BEFORE DELETE")
+            logging.info(query_df.to_string())
 
-        # delete operation
-        self.run_query("DELETE " + query)
+            # delete operation
+            self.run_query("DELETE " + query)
 
-        query_df = pd.read_sql_query(
-            query_output,
-            con=self.engine,
-        )
-        logging.info("AFTER DELETE")
-        logging.info(query_df.to_string())
+            query_df = pd.read_sql_query(
+                query_output,
+                con=self.engine,
+            )
+            logging.info("AFTER DELETE")
+            logging.info(query_df.to_string())
+            logging.info('ending {recipient} ')
         return logging.info(f"finished function `api_and_email_task` for {city_name}")
 
     def main(self):
