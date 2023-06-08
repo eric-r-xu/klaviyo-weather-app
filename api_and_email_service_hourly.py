@@ -145,7 +145,7 @@ class ApiAndEmailServiceHourly:
             gif_link = "https://media.giphy.com/media/3o6vXNLzXdW4sbFRGo/giphy.gif"
 
         for recipient in recipients:
-            logging.info('starting {recipient} ')
+            logging.info(f'starting {recipient} ')
             expiration_df = pd.read_sql_query(
                 f"SELECT date_sub(sign_up_date, interval -10 day) AS expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
                 con=self.engine,
@@ -198,7 +198,7 @@ class ApiAndEmailServiceHourly:
             )
             logging.info("AFTER DELETE")
             logging.info(query_df.to_string())
-            logging.info('ending {recipient} ')
+            logging.info(f'ending {recipient} ')
         return logging.info(f"finished function `api_and_email_task` for {city_name}")
 
     def main(self):
