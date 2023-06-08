@@ -94,12 +94,26 @@ class ApiAndEmailServiceHourly:
         )
         logging.info(f"{city_name}: tomorrow_max_degrees_F = {tomorrow_max_degrees_F}")
 
-        query = f"DELETE from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
-        delete_output = self.run_query(query)
-        logging.info(
-            f"successfully finished {query}"
+        query = f"from klaviyo.tblFactCityWeather where dateFact='{local_dateFact}' and city_id={cityID} "
+        delete_query = "DELETE " + query
+        query_output = "SELECT * " + query
+
+        query_df = pd.read_sql_query(
+            query_output,
+            con=self.engine,
         )
-        logging.info(f"{delete_output}")
+        logging.info("BEFORE DELETE")
+        logging.info(query_df.to_string())
+
+        # delete operation
+        self.run_query("DELETE " + query)
+
+        query_df = pd.read_sql_query(
+            query_output,
+            con=self.engine,
+        )
+        logging.info("AFTER DELETE")
+        logging.info(query_df.to_string())
 
         query = f"INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES ({cityID}, '{local_dateFact}', '{today_weather}', {today_max_degrees_F}, {tomorrow_max_degrees_F})"
         self.run_query(query)
@@ -163,11 +177,25 @@ class ApiAndEmailServiceHourly:
                 logging.info(f"Sent email to {recipient}")
 
         # purge subscriptions for city older than 10 days from sign_up_date
-        query = f"DELETE from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
- 
-        delete_output = self.run_query(query)
-        logging.info(f"finished {query}")
-        logging.info(f"{delete_output}")
+        query = f"from klaviyo.tblDimEmailCity where sign_up_date<date_sub('{local_dateFact}', interval 10 day) and city_id={cityID} "
+        delete_query = "DELETE " + query
+        query_output = "SELECT * " + query
+        query_df = pd.read_sql_query(
+            query_output,
+            con=self.engine,
+        )
+        logging.info("BEFORE DELETE")
+        logging.info(query_df.to_string())
+
+        # delete operation
+        self.run_query("DELETE " + query)
+
+        query_df = pd.read_sql_query(
+            query_output,
+            con=self.engine,
+        )
+        logging.info("AFTER DELETE")
+        logging.info(query_df.to_string())
         return logging.info(f"finished function `api_and_email_task` for {city_name}")
 
     def main(self):
