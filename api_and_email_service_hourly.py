@@ -153,7 +153,7 @@ class ApiAndEmailServiceHourly:
 
             for row in expiration_df.itertuples(index=True, name="Pandas"):
                 expiration_datetime = getattr(row, "expiration_date")
-                expiration_date = str(expiration_date)[0:10]
+                expiration_date = str(expiration_datetime)[0:10]
 
             message = MIMEMultipart()
             message["From"] = GMAIL_AUTH["mail_username"]
