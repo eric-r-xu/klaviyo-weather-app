@@ -3,7 +3,7 @@ Email web subscription service that makes weather based marketing emails for wor
 
 ### web application deployment directions
 #### Deployed on Ubuntu 22.04 (LTS) x64 Digital Ocean droplet with git version 2.17.1, Python 3.10.6, & MySQL 5.7.41 
-#### subscription app service hosted [here](http://ericrxu.com:1984/klaviyo_weather_app)
+#### subscription app service hosted [here](https://app.ericrxu.com/klaviyo)
 
 - - - - 
 
