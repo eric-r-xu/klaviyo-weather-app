@@ -69,7 +69,7 @@ class ApiAndEmailServiceHourly:
             # purge data test
             query = f"from klaviyo.tblDimEmailCity where SUBSTR(sign_up_date,1,10) <= '{expiration_date}'  "
             delete_query = "DELETE " + query
-            query_output = "SELECT * klaviyo.tblDimEmailCity"
+            query_output = "SELECT * FROM klaviyo.tblDimEmailCity"
             query_df = pd.read_sql_query(
                 query_output,
                 con=self.engine,
