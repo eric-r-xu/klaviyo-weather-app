@@ -179,7 +179,7 @@ class ApiAndEmailServiceHourly:
                 logging.info(f"Sent email to {recipient}")
 
             # purge individual email city weather subscriptions older than 10 days from sign_up_date
-            query = f"from klaviyo.tblDimEmailCity where '{local_dateFact}'>= '{expiration_date}' and city_id={cityID} "
+            query = f"from klaviyo.tblDimEmailCity where sign_up_date <= '{expiration_date}' "
             delete_query = "DELETE " + query
             query_output = "SELECT * " + query
             query_df = pd.read_sql_query(
