@@ -147,7 +147,7 @@ class ApiAndEmailServiceHourly:
         for recipient in recipients:
             logging.info(f'starting {recipient} ')
             expiration_df = pd.read_sql_query(
-                f"SELECT date_sub(sign_up_date, interval -10 day) AS expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
+                f"SELECT sign_up_date AS expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
                 con=self.engine,
             )
 
@@ -178,8 +178,8 @@ class ApiAndEmailServiceHourly:
                 server.send_message(message)
                 logging.info(f"Sent email to {recipient}")
 
-            # purge individual email city weather subscriptions older than 10 days from sign_up_date
-            query = f"from klaviyo.tblDimEmailCity where sign_up_date <= '{expiration_date}' "
+            # purge data test
+            query = f"from klaviyo.tblDimEmailCity where sign_up_date <= '{expiration_date}' and email='{recipient}' "
             delete_query = "DELETE " + query
             query_output = "SELECT * " + query
             query_df = pd.read_sql_query(
