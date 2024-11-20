@@ -55,20 +55,9 @@ class ApiAndEmailServiceHourly:
         logging.info(f"Starting `api_and_email_task` for {city_name} at {local_time}")
 
         if local_hour != LOCAL_TIME_HOUR:
-
-
-            expiration_df = pd.read_sql_query(
-                f"SELECT MIN(sign_up_date) AS expiration_date from klaviyo.tblDimEmailCity ",
-                con=self.engine,
-            )
-
-            for row in expiration_df.itertuples(index=True, name="Pandas"):
-                expiration_datetime = getattr(row, "expiration_date")
-                expiration_date = str(expiration_datetime)[0:10]
-
             # purge data test
-            query = f"from klaviyo.tblDimEmailCity where SUBSTR(sign_up_date,1,10) <= '{expiration_date}'  "
-            delete_query = "DELETE " + query
+            delete_query = f"DELETE from klaviyo.tblDimEmailCity where SUBSTR(sign_up_date,1,10) <= CURRENT_DATE and email='ericrxu1984@gmail.com';  "
+
             query_output = "SELECT * FROM klaviyo.tblDimEmailCity"
             query_df = pd.read_sql_query(
                 query_output,
@@ -78,7 +67,7 @@ class ApiAndEmailServiceHourly:
             logging.info(query_df.to_string())
 
             # delete operation
-            self.run_query("DELETE " + query)
+            self.run_query(delete_query)
 
             query_df = pd.read_sql_query(
                 query_output,
