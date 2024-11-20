@@ -40,6 +40,17 @@ class ApiAndEmailServiceHourly:
     def run_query(self, query):
         with self.engine.connect() as connection:
             connection.execute(text(query))
+            # Start a transaction
+            transaction = connection.begin()
+            try:
+                # Execute the query
+                connection.execute(text(query))
+                # Commit the transaction
+                transaction.commit()
+            except Exception as e:
+                # Roll back if something goes wrong
+                transaction.rollback()
+                raise e
 
     def fetch(self, url):
         response = requests.get(url)
