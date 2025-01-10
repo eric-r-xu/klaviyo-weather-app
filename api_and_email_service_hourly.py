@@ -64,8 +64,12 @@ class ApiAndEmailServiceHourly:
         logging.info(f"Starting `api_and_email_task` for {city_name} at {local_time}")
 
         if local_hour != LOCAL_TIME_HOUR:
-            # purge data test
-            delete_query = f"DELETE from klaviyo.tblDimEmailCity where SUBSTR(sign_up_date,1,10) <= CURRENT_DATE and email='ericrxu1984@gmail.com';  "
+            delete_query = f"""DELETE from klaviyo.tblDimEmailCity
+                where
+                  DATE_SUB(
+                    STR_TO_DATE(SUBSTR(sign_up_date, 1, 10), '%Y-%m-%d'),
+                    INTERVAL -10 DAY
+                  ) <= CURRENT_DATE;  """
 
             query_output = "SELECT * FROM klaviyo.tblDimEmailCity"
             query_df = pd.read_sql_query(
