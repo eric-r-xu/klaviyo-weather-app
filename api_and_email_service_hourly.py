@@ -149,7 +149,7 @@ class ApiAndEmailServiceHourly:
 
         query = f"""
         INSERT INTO klaviyo.tblFactCityWeather (city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F)
-        VALUES ({city_id}, '{dateFact}', '{today_weather}', {today_max_degrees_F}, {tomorrow_max_degrees_F})
+        VALUES ({cityID}, '{dateFact}', '{today_weather}', {today_max_degrees_F}, {tomorrow_max_degrees_F})
         ON DUPLICATE KEY UPDATE
         today_weather = VALUES(today_weather),
         today_max_degrees_F = VALUES(today_max_degrees_F),
