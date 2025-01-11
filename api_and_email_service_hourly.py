@@ -13,6 +13,8 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 import smtplib
 from timezonefinder import TimezoneFinder
+from sqlalchemy.sql import text  # Import SQL text wrapper
+import sqlalchemy  # Import SQLAlchemy for exception handling
 
 from initialize_mysql import *
 
@@ -40,9 +42,11 @@ class ApiAndEmailServiceHourly:
     def run_query(self, query):
         try:
             with self.engine.connect() as connection:
-                connection.execute(query)
+                connection.execute(text(query))  # Wrap the query string with `text`
         except sqlalchemy.exc.IntegrityError as e:
             print(f"IntegrityError: {e}")
+        except sqlalchemy.exc.ObjectNotExecutableError as e:
+            print(f"ObjectNotExecutableError: {e}")
         except Exception as e:
             print(f"Error running query: {e}")
 
