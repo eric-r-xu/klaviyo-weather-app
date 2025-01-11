@@ -187,7 +187,7 @@ class ApiAndEmailServiceHourly:
         for recipient in recipients:
             logging.info(f'starting {recipient} ')
             expiration_df = pd.read_sql_query(
-                f"SELECT sign_up_date AS expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
+                f"SELECT DATE_ADD(sign_up_date, INTERVAL 10 DAY) AS expiration_date from klaviyo.tblDimEmailCity where city_id={cityID} AND email='{recipient}' LIMIT 1",
                 con=self.engine,
             )
 
