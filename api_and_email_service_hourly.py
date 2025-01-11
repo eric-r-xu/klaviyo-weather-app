@@ -38,17 +38,13 @@ class ApiAndEmailServiceHourly:
         self.engine = engine
 
     def run_query(self, query):
-        with self.engine.connect() as connection:
-            connection.execute(text(query))
-            try:
-                # Execute the query
-                connection.execute(text(query))
-                # Commit the transaction
-                connection.commit()
-            except Exception as e:
-                # Roll back if something goes wrong
-                connection.rollback()
-                raise e
+        try:
+            with self.engine.connect() as connection:
+                connection.execute(query)
+        except sqlalchemy.exc.IntegrityError as e:
+            print(f"IntegrityError: {e}")
+        except Exception as e:
+            print(f"Error running query: {e}")
 
     def fetch(self, url):
         response = requests.get(url)
@@ -147,8 +143,16 @@ class ApiAndEmailServiceHourly:
         logging.info("AFTER DELETE")
         logging.info(query_df.to_string())
 
-        query = f"INSERT INTO klaviyo.tblFactCityWeather(city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F) VALUES ({cityID}, '{local_dateFact}', '{today_weather}', {today_max_degrees_F}, {tomorrow_max_degrees_F})"
+        query = f"""
+        INSERT INTO klaviyo.tblFactCityWeather (city_id, dateFact, today_weather, today_max_degrees_F, tomorrow_max_degrees_F)
+        VALUES ({city_id}, '{dateFact}', '{today_weather}', {today_max_degrees_F}, {tomorrow_max_degrees_F})
+        ON DUPLICATE KEY UPDATE
+        today_weather = VALUES(today_weather),
+        today_max_degrees_F = VALUES(today_max_degrees_F),
+        tomorrow_max_degrees_F = VALUES(tomorrow_max_degrees_F);
+        """
         self.run_query(query)
+
         logging.info(
             f"successfully finished INSERT INTO klaviyo.tblFactCityWeather({str(cityID)}, {str(local_dateFact)}, {str(today_weather)}, {str(today_max_degrees_F)}, {str(tomorrow_max_degrees_F)})"
         )
