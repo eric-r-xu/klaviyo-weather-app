@@ -63,39 +63,36 @@ class ApiAndEmailServiceHourly:
 
         logging.info(f"Starting `api_and_email_task` for {city_name} at {local_time}")
 
-        if local_hour != LOCAL_TIME_HOUR:
-            delete_query = f"""DELETE from klaviyo.tblDimEmailCity
-                where
-                  DATE_SUB(
-                    STR_TO_DATE(SUBSTR(sign_up_date, 1, 10), '%Y-%m-%d'),
-                    INTERVAL -10 DAY
-                  ) <= CURRENT_DATE;  """
+        delete_query = f"""DELETE from klaviyo.tblDimEmailCity
+            where
+              DATE_SUB(
+                STR_TO_DATE(SUBSTR(sign_up_date, 1, 10), '%Y-%m-%d'),
+                INTERVAL -10 DAY
+              ) <= CURRENT_DATE;  """
 
-            query_output = "SELECT * FROM klaviyo.tblDimEmailCity"
-            query_df = pd.read_sql_query(
-                query_output,
-                con=self.engine,
-            )
-            logging.info("BEFORE DELETE")
-            logging.info(query_df.to_string())
+        query_output = "SELECT * FROM klaviyo.tblDimEmailCity"
+        query_df = pd.read_sql_query(
+            query_output,
+            con=self.engine,
+        )
+        logging.info("BEFORE DELETE")
+        logging.info(query_df.to_string())
 
-            # delete operation
-            self.run_query(delete_query)
+        # delete operation
+        self.run_query(delete_query)
 
-            query_df = pd.read_sql_query(
-                query_output,
-                con=self.engine,
-            )
-            logging.info("AFTER DELETE")
-            logging.info(query_df.to_string())
+        query_df = pd.read_sql_query(
+            query_output,
+            con=self.engine,
+        )
+        logging.info("AFTER DELETE")
+        logging.info(query_df.to_string())
 
-            
-            logging.info(
-                f"Skipping `api_and_email_task` for {city_name} since local hour {local_hour} != {LOCAL_TIME_HOUR}"
-            )
-            return
-        else:
-            logging.info("proceeding")
+        
+        logging.info(
+            f"Skipping `api_and_email_task` for {city_name} since local hour {local_hour} != {LOCAL_TIME_HOUR}"
+        )
+
 
         # call current weather api for city
         url = f"http://api.openweathermap.org/data/2.5/weather?id={cityID}&appid={OPENWEATHERMAP_AUTH_api_key}"
