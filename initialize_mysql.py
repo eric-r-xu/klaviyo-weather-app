@@ -52,7 +52,7 @@ dtype_options = {
 }
 
 # Import the CSV file with specified data types
-df = pd.read_csv("city_dict.tsv", sep="\t", dtype=dtype_options)
+df = pd.read_csv("/root/klaviyo-weather-app/city_dict.tsv", sep="\t", dtype=dtype_options)
 
 df = df.fillna("")
 
